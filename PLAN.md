@@ -47,7 +47,8 @@
 | D-07 | Landing | Milyonus Landing Page'in tasarım dili Next.js `(marketing)` grubuna taşınır. Diller: en + tr. |
 | D-08 | Temel | App-Milyonus'un temeli (RLS, tetikleyicilerle korunan kurallar, kuyruk, cron, kimlik) sadeleştirilerek alınır. Migration zinciri **sıfırdan ve temiz** yazılır. |
 | D-09 | Hafıza | Agent 5.5 Verified Memory → `packages/memory`; Postgres + pgvector üstünde, **bilinen 10 açık düzeltilerek**. |
-| D-10 | "Deaktif" | **Reaktif (olay tetikli) + isteğe bağlı (elle)** otomasyon olarak yorumlandı. Doğrulanması gerekiyor (bkz. DECISIONS D-10). |
+| D-10 | "Deaktif" | **Reaktif (olay tetikli) + isteğe bağlı (elle)** otomasyon. Onaylandı. |
+| D-17 | Varsayılan dil | **Her yerde İngilizce**; Türkçe yalnızca kişi seçince. |
 
 ---
 

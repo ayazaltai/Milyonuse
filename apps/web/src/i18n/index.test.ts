@@ -27,16 +27,11 @@ describe('dictionaries', () => {
 
 describe('resolveLocale', () => {
   it('keeps a language someone chose', () => {
-    expect(resolveLocale('tr', 'en-US,en;q=0.9')).toBe('tr');
+    expect(resolveLocale('tr')).toBe('tr');
   });
 
-  it('reads the browser’s first language we ship', () => {
-    expect(resolveLocale(undefined, 'de-DE,tr;q=0.8,en;q=0.5')).toBe('tr');
-    expect(resolveLocale(undefined, 'tr-TR')).toBe('tr');
-  });
-
-  it('falls back to English', () => {
-    expect(resolveLocale('fr', 'fr-FR,de;q=0.9')).toBe('en');
-    expect(resolveLocale(undefined, null)).toBe('en');
+  it('is English otherwise — whatever the browser prefers', () => {
+    expect(resolveLocale(undefined)).toBe('en');
+    expect(resolveLocale('fr')).toBe('en');
   });
 });

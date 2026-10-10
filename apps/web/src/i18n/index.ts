@@ -17,15 +17,11 @@ export const LOCALE_COOKIE = 'mu_locale';
 export const LOCALE_HEADER = 'x-mu-locale';
 
 /**
- * The language for a request with no language in its path: one chosen
- * before (the cookie), else the browser's first preference we ship, else
- * English.
+ * The language for a request with no language in its path: one the person
+ * chose (the cookie), else English. The browser's preferences are never read:
+ * English is the default everywhere until someone picks another language
+ * (DECISIONS D-17).
  */
-export function resolveLocale(cookie: string | undefined, acceptLanguage: string | null): Locale {
-  if (isLocale(cookie)) return cookie;
-  for (const part of (acceptLanguage ?? '').split(',')) {
-    const tag = part.split(';')[0]?.trim().toLowerCase().slice(0, 2);
-    if (isLocale(tag)) return tag;
-  }
-  return DEFAULT_LOCALE;
+export function resolveLocale(cookie: string | undefined): Locale {
+  return isLocale(cookie) ? cookie : DEFAULT_LOCALE;
 }

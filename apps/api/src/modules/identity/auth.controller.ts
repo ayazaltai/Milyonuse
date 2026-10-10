@@ -18,7 +18,7 @@ import { IdempotencyExempt } from '../tenancy/idempotency.js';
 import { AccountService, type DevelopmentLink } from './account.service.js';
 import { clearedCookieOptions, sessionCookieOptions } from './cookie.js';
 import { ProfileService } from './profile.service.js';
-import { contextOf, requestLocale } from './request-context.js';
+import { contextOf } from './request-context.js';
 import { SessionGuard } from './session.guard.js';
 import { SessionService } from './session.service.js';
 
@@ -103,12 +103,9 @@ export class AuthController {
     { limit: 10, windowSec: 3600, per: 'address' },
     { limit: 3, windowSec: 3600, per: 'email' },
   )
-  async forgotPassword(
-    @Body() body: unknown,
-    @Req() request: FastifyRequest,
-  ): Promise<{ status: 'link_sent' } & DevelopmentLink> {
+  async forgotPassword(@Body() body: unknown): Promise<{ status: 'link_sent' } & DevelopmentLink> {
     const { email } = forgotPasswordInputSchema.parse(body);
-    return { status: 'link_sent', ...(await this.accounts.requestPasswordLink(email, requestLocale(request))) };
+    return { status: 'link_sent', ...(await this.accounts.requestPasswordLink(email)) };
   }
 
   /** Sets the password a link was issued for, and signs the person out everywhere. */

@@ -81,7 +81,7 @@ Biçim: **Karar · Gerekçe · Sonuç · Durum**
   - **Proaktif:** agent işi kendisi başlatır (zamanlama, izleme, hedef, öneri).
   - **Reaktif / Deaktif:** iş, bir olay ya da kullanıcı tetikleyene kadar uykudadır (webhook, e-posta, kanal mesajı, dosya, başka bir agent'ın olayı, "şimdi çalıştır").
 - **Ortak özellikler:** Her otomasyonun `enabled` (aktif ya da pasif) anahtarı vardır. Pasif bir otomasyon tanımlı kalır ama tetiklenmez.
-- **Durum:** **Ayaz'ın onayını bekliyor.** Farklı bir anlam kastedildiyse F6 başlamadan güncellenir.
+- **Durum:** Kabul (Ayaz, 2026-10-10: "deaktif yorumun doğru").
 
 ### D-11 — Yazma yolu tek: Öneri + RiskEngine
 - **Karar:** Her tool bir `risk` (`safe` | `caution` | `danger`) ve bir `reversible` bilgisi taşır. Karar matrisi:
@@ -121,3 +121,11 @@ Biçim: **Karar · Gerekçe · Sonuç · Durum**
   - Ödeme: USD için Stripe, TRY için iyzico.
   - Kullanım, App-Milyonus `usage_daily` modeliyle kredi cinsinden ölçülür.
 - **Durum:** Taslak.
+
+### D-17 — Varsayılan dil her yerde İngilizce
+- **Karar:** Ürün her yerde varsayılan olarak İngilizce açılır. Tarayıcının dil tercihi (Accept-Language) hiçbir yerde okunmaz.
+  - Türkçe yalnızca kişi açıkça seçtiğinde gelir: dil seçici, `?lang=tr` bağlantısı ya da profil ayarı.
+  - Seçim `mu_locale` çerezinde ve hesabın `locale` alanında tutulur.
+  - `/` her zaman `/en`'e gider; kişi daha önce başka bir dil seçtiyse oraya.
+  - Hesabı olmayan bir adrese giden e-posta İngilizcedir.
+- **Durum:** Kabul (Ayaz, 2026-10-10: "make default as english for always").

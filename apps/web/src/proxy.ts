@@ -5,9 +5,11 @@ import { LOCALE_COOKIE, LOCALE_HEADER, resolveLocale } from './i18n';
 /**
  * In front of every page (Next 16's `proxy`, formerly `middleware`):
  *
- *   language   `/` goes to `/en` or `/tr`; every other page is told its
- *              language through a request header, read by the root layout,
- *              and a `?lang=` carried from a page in one language is kept
+ *   language   English unless the person chose another (D-17): `/` goes to
+ *              `/en`, or to the language they picked; every other page is
+ *              told its language through a request header, read by the root
+ *              layout, and a `?lang=` carried from a page in one language is
+ *              kept
  *   the app    `/app…` needs a session cookie, or it goes to sign-in and comes
  *              back afterwards. The cookie is only a hint here — the API
  *              decides — but it spares an anonymous visitor a flash of shell
@@ -59,7 +61,7 @@ export function proxy(request: NextRequest): NextResponse {
   const carried = searchParams.get('lang');
   const chosen = isLocale(carried)
     ? carried
-    : resolveLocale(request.cookies.get(LOCALE_COOKIE)?.value, request.headers.get('accept-language'));
+    : resolveLocale(request.cookies.get(LOCALE_COOKIE)?.value);
 
   if (pathname === '/') {
     return secure(NextResponse.redirect(new URL(`/${chosen}`, request.url)), https);

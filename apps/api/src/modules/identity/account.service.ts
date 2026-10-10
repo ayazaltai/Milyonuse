@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ACCOUNT_LINK_HOURS, ErrorCode, type Locale, type RegisterInput, isLocale } from '@milyonuse/contracts';
+import { ACCOUNT_LINK_HOURS, DEFAULT_LOCALE, ErrorCode, type Locale, type RegisterInput, isLocale } from '@milyonuse/contracts';
 import type pg from 'pg';
 import { AppError } from '../../common/app-error.js';
 import { AppLogger } from '../../common/logging/logger.js';
@@ -250,17 +250,18 @@ export class AccountService {
   // ──────────────────────────────────────────────────────────────── password
 
   /**
-   * Mails a link to set a new password. An address with no account is told
-   * so, in the same kind of mail; the answer to the caller is the same.
+   * Mails a link to set a new password, in the account's language. An address
+   * with no account is told so, in English (D-17); the answer to the caller is
+   * the same.
    */
-  async requestPasswordLink(email: string, requestLocale: Locale): Promise<DevelopmentLink> {
+  async requestPasswordLink(email: string): Promise<DevelopmentLink> {
     const { rows } = await this.platform.query<{ id: string; locale: string }>(
       `SELECT id, locale FROM users WHERE email = $1`,
       [email],
     );
     const user = rows[0];
     if (!user) {
-      await this.mailer.send(noAccountMail(requestLocale, email, this.url('/register')));
+      await this.mailer.send(noAccountMail(DEFAULT_LOCALE, email, this.url('/register')));
       return {};
     }
 
@@ -271,7 +272,7 @@ export class AccountService {
       hours: ACCOUNT_LINK_HOURS.setPassword,
     });
     const link = this.url(`/reset?token=${encodeURIComponent(token)}`);
-    await this.mailer.send(passwordLinkMail(isLocale(user.locale) ? user.locale : requestLocale, email, link));
+    await this.mailer.send(passwordLinkMail(isLocale(user.locale) ? user.locale : DEFAULT_LOCALE, email, link));
     return this.development(link);
   }
 

@@ -298,8 +298,8 @@ describe('a forgotten password', () => {
     expect(unknown.statusCode).toBe(202);
     expect(known.json()).toEqual(unknown.json());
     expect(lastMail(api.outbox, address).text).toContain('/reset?token=');
-    // Someone the product does not know is written to in their browser's language.
-    expect(lastMail(api.outbox, email('ghost')).subject).toBe('Bu adres için Milyonuse hesabı yok');
+    // Someone the product does not know is written to in English, whatever their browser prefers (D-17).
+    expect(lastMail(api.outbox, email('ghost')).subject).toBe('No Milyonuse account for this address');
   });
 
   it('sets the new password, signs the person out everywhere, and spends the link', async () => {
