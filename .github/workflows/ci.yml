@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # No install, no database: an architectural violation is reported in seconds.
+  guards:
+    name: Guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash scripts/guard-tenancy.sh
+      - run: bash scripts/guard-secrets.sh
+
+  verify:
+    name: Typecheck · Lint · Test · Build
+    runs-on: ubuntu-latest
+    needs: guards
+    services:
+      postgres:
+        # The container's superuser only bootstraps the cluster; milyonuse is
+        # created by db/roles.sql as an ordinary owner, as in production — a
+        # superuser bypasses FORCE ROW LEVEL SECURITY and hides what it binds.
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL_SUPERUSER: postgres://postgres:postgres@localhost:5432/postgres
+      DATABASE_URL_MIGRATOR: postgres://milyonuse:milyonuse@localhost:5432/milyonuse
+      DATABASE_URL_APP: postgres://milyonuse_app:milyonuse@localhost:5432/milyonuse
+      DATABASE_URL_PLATFORM: postgres://milyonuse_platform:milyonuse@localhost:5432/milyonuse
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Roles, database and migrations
+        run: bash scripts/db-setup.sh
+      - name: Migrations re-applied are a no-op
+        run: pnpm db:migrate
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build

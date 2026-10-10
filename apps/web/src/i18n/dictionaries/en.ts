@@ -1,0 +1,444 @@
+/**
+ * English — the source every other language is checked against: a Turkish
+ * dictionary that misses a key does not compile (`Dictionary` below).
+ */
+export const en = {
+  meta: {
+    title: 'Milyonuse — your AI team, working while you sleep',
+    description:
+      'Build your own AI agents, form them into teams, and let them work on proactive and reactive automations — on a memory that verifies before it believes.',
+  },
+  common: {
+    product: 'Milyonuse',
+    byline: 'by Milyonus',
+    signIn: 'Sign in',
+    signUp: 'Start free',
+    signOut: 'Sign out',
+    openApp: 'Open the app',
+    language: 'Language',
+    languages: { en: 'English', tr: 'Türkçe' },
+    soon: 'Soon',
+    save: 'Save changes',
+    saving: 'Saving…',
+    saved: 'Saved.',
+    back: 'Back',
+    menu: 'Menu',
+    closeMenu: 'Close menu',
+    skipToContent: 'Skip to content',
+    draftNotice: 'Draft — this page is pending legal review before launch.',
+  },
+  errors: {
+    generic: 'Something went wrong. Try again.',
+    network: 'The connection failed. Check your network and try again.',
+    rate_limited: 'Too many attempts in a short time. Wait a moment and try again.',
+    invalid_credentials: 'That email and password do not match an account.',
+    signup_closed: 'Registration is closed for now. Try again soon.',
+    not_found: 'This link is no longer valid. Ask for a new one.',
+    session_expired: 'Your session has ended. Sign in again.',
+    unauthenticated: 'Sign in to continue.',
+    reauthentication_failed: 'Your current password is not correct.',
+    conflict: 'This address already has an account. Sign in, or reset your password.',
+    notFoundTitle: 'Nothing here',
+    notFoundBody: 'The page you were looking for does not exist, or has moved.',
+    notFoundAction: 'Go home',
+  },
+  nav: {
+    how: 'How it works',
+    capabilities: 'Capabilities',
+    trust: 'Trust',
+    pricing: 'Pricing',
+    faq: 'FAQ',
+  },
+  marketing: {
+    hero: {
+      badge: 'Milyonus Agent · Early access',
+      titleTop: 'Your own AI team',
+      titleAccent: 'that never clocks out.',
+      kicker: [
+        'Build agents, form them into teams, hand them the work.',
+        'They act on their own schedule — and stop to ask before anything you cannot undo.',
+      ],
+      primary: 'Start free',
+      secondary: 'See how it works',
+      chips: ['Proactive automations', 'Reactive triggers', 'Verified memory', 'WhatsApp · Telegram · Slack · Email'],
+    },
+    how: {
+      eyebrow: 'How it works',
+      titleTop: 'From one agent',
+      titleAccent: 'to a team that runs itself',
+      steps: [
+        {
+          title: 'Build your agents',
+          text: 'Give each one a role, a voice, the tools it may use and what it should remember. Start from a template or from scratch.',
+        },
+        {
+          title: 'Form a team',
+          text: 'A lead plans the work and hands tasks to specialists. They work in parallel, a reviewer checks, and you get one result.',
+        },
+        {
+          title: 'Let it run',
+          text: 'On a schedule, when something changes, when a message arrives — or when you press run. You approve what matters.',
+        },
+      ],
+    },
+    capabilities: {
+      eyebrow: 'Capabilities',
+      titleTop: 'Everything a team needs',
+      titleAccent: 'to work without you watching',
+      items: [
+        {
+          title: 'Agents with a role',
+          text: 'Persona, instructions, model tier, tools and memory scope — each agent is a specialist you designed.',
+        },
+        {
+          title: 'Teams that delegate',
+          text: 'Hierarchical, pipeline or debate. Tasks become a graph; members work in parallel inside their own budgets.',
+        },
+        {
+          title: 'Proactive automations',
+          text: 'Schedules in plain language, monitors that watch for change, goals pursued until they are met.',
+        },
+        {
+          title: 'Reactive triggers',
+          text: 'A webhook, an email, a chat message, a new file, another agent finishing — any of them can start the work.',
+        },
+        {
+          title: 'Talk from anywhere',
+          text: 'Chat on the web, or on WhatsApp, Telegram, Slack and email. Approve a proposal with one tap.',
+        },
+        {
+          title: 'Tools and connections',
+          text: 'Web research, a code sandbox, files, a browser, and the apps you connect — Gmail, Calendar, Notion and more.',
+        },
+      ],
+    },
+    trust: {
+      eyebrow: 'Verified memory',
+      titleTop: 'It remembers.',
+      titleAccent: 'It verifies before it believes.',
+      lead:
+        'Agents that learn are easy to poison: one hostile web page or email and a lie becomes a "fact" forever. Milyonuse treats memory as a security boundary.',
+      points: [
+        {
+          title: 'Provenance on every line',
+          text: 'Who wrote it, from where, in which run, with what evidence — always one click away.',
+        },
+        {
+          title: 'Quarantine, then verify',
+          text: 'New knowledge waits until it is checked. What came from outside never counts as something you said.',
+        },
+        {
+          title: 'Trust that decays',
+          text: 'Memories must keep earning their place. What is not reconfirmed fades instead of staying true forever.',
+        },
+        {
+          title: 'Revoke a source in one step',
+          text: 'Pull a poisoned source and everything derived from it goes with it.',
+        },
+        {
+          title: 'You approve the irreversible',
+          text: 'Sending, paying, deleting — anything that cannot be undone waits for your yes.',
+        },
+        {
+          title: 'Your data stays yours',
+          text: 'Every account is isolated in the database itself, and model providers keep nothing.',
+        },
+      ],
+    },
+    pricing: {
+      eyebrow: 'Pricing',
+      titleTop: 'Start free,',
+      titleAccent: 'grow into a team',
+      note: 'Prices are announced at launch. Early access is open now.',
+      tba: 'Announced at launch',
+      cta: 'Join early access',
+      plans: [
+        {
+          name: 'Free',
+          blurb: 'Meet your first agent.',
+          features: ['1 agent', 'Chat on the web', 'Verified memory', 'Manual and scheduled runs'],
+        },
+        {
+          name: 'Pro',
+          blurb: 'Your personal AI team.',
+          features: ['Unlimited agents', '3 teams', 'Proactive and reactive automations', 'WhatsApp, Telegram, Slack, email'],
+          featured: true,
+        },
+        {
+          name: 'Team Pro',
+          blurb: 'For heavy, always-on work.',
+          features: ['Everything in Pro', '15 teams', 'Code sandbox minutes', 'Shared workspace'],
+        },
+      ],
+    },
+    faq: {
+      eyebrow: 'FAQ',
+      titleTop: 'Questions,',
+      titleAccent: 'answered',
+      items: [
+        {
+          q: 'What is a "team" of agents?',
+          a: 'A lead agent and specialist members. The lead breaks your request into tasks, members work on them in parallel, a reviewer checks the result, and you get one answer.',
+        },
+        {
+          q: 'What is the difference between proactive and reactive automations?',
+          a: 'Proactive automations start on their own — on a schedule, when a monitor sees a change, or while pursuing a goal. Reactive ones wait for something to happen: a webhook, an email, a chat message, a file, another agent finishing, or you pressing run.',
+        },
+        {
+          q: 'Can an agent do something I did not want?',
+          a: 'Anything that cannot be undone — sending an email, a payment, deleting — becomes a proposal you approve first. Unattended automations are limited to safe actions unless you decide otherwise.',
+        },
+        {
+          q: 'How is the memory protected from poisoning?',
+          a: 'Every memory carries its source and evidence, waits in quarantine until it is verified, loses trust over time unless it is reconfirmed, and can be revoked with everything derived from it.',
+        },
+        {
+          q: 'Which AI models does it use?',
+          a: 'Leading models through a single router, with providers instructed to keep no data. You choose a speed tier — fast, balanced or deep — per agent.',
+        },
+        {
+          q: 'Is it available in Turkish?',
+          a: 'Yes. The product, the agents and the messages they send work in Turkish and English.',
+        },
+      ],
+    },
+    closing: {
+      titleTop: 'Hand over the work.',
+      titleAccent: 'Keep the decisions.',
+      lead: 'Create your account in a minute. Your first agent is waiting.',
+      cta: 'Start free',
+    },
+    footer: {
+      tagline: 'Your own AI team, on a memory that verifies before it believes.',
+      product: 'Product',
+      company: 'Company',
+      legal: 'Legal',
+      about: 'Milyonus',
+      contact: 'Contact',
+      privacy: 'Privacy',
+      terms: 'Terms',
+      cookies: 'Cookies',
+      rights: 'Milyonus Inc. All rights reserved.',
+    },
+  },
+  legal: {
+    updated: 'Last updated',
+    privacy: {
+      title: 'Privacy Policy',
+      sections: [
+        {
+          heading: 'What we collect',
+          body: 'Your account details (name, email address, language, time zone), what you create in Milyonuse (agents, teams, automations, conversations, memories and files), and technical records needed to run and secure the service (sessions, request logs).',
+        },
+        {
+          heading: 'How we use it',
+          body: 'To provide the service you asked for, to keep it secure, and to tell you about your account. We do not sell your data and we do not use it to train AI models.',
+        },
+        {
+          heading: 'AI model providers',
+          body: 'Your requests are sent to AI model providers through a router configured so that providers retain no data. Only what an agent needs for a task is sent.',
+        },
+        {
+          heading: 'Where it is stored',
+          body: 'In a managed database in the European Union, isolated per account at the database level.',
+        },
+        {
+          heading: 'Your rights',
+          body: 'You can access, export, correct and delete your data. Under KVKK and GDPR you may also object to or restrict processing. Contact Milyonus Inc. to exercise them.',
+        },
+      ],
+    },
+    terms: {
+      title: 'Terms of Service',
+      sections: [
+        {
+          heading: 'The service',
+          body: 'Milyonuse lets you build AI agents and teams that act on your behalf. Agents can make mistakes; review their work and approve consequential actions yourself.',
+        },
+        {
+          heading: 'Your account',
+          body: 'Keep your password safe. You are responsible for what is done with your account and for the instructions you give your agents.',
+        },
+        {
+          heading: 'Acceptable use',
+          body: 'Do not use the service to break the law, to harm others, to send spam, or to attempt to compromise any system, including ours.',
+        },
+        {
+          heading: 'Early access',
+          body: 'During early access, features may change and the service may be interrupted. Plans and prices are announced before any charge.',
+        },
+        {
+          heading: 'Who we are',
+          body: 'Milyonuse is a product of Milyonus Inc.',
+        },
+      ],
+    },
+    cookies: {
+      title: 'Cookie Policy',
+      sections: [
+        {
+          heading: 'Strictly necessary cookies only',
+          body: 'We use a session cookie to keep you signed in (mu_session) and a preference cookie to remember your language (mu_locale). Neither is used for advertising or tracking.',
+        },
+        {
+          heading: 'Analytics',
+          body: 'There is no analytics or advertising cookie on this site. If that changes, we will ask for your consent first.',
+        },
+      ],
+    },
+  },
+  auth: {
+    brandEyebrow: 'Milyonus Agent',
+    brandTitleTop: 'Your AI team,',
+    brandTitleAccent: 'working while you sleep',
+    brandPoints: [
+      { title: 'Agents and teams', text: 'Specialists you design, a lead that delegates, one result.' },
+      { title: 'Automations both ways', text: 'Proactive on a schedule or a goal, reactive to any event.' },
+      { title: 'A memory you can trust', text: 'Verified before it is believed, revoked in one step.' },
+    ],
+    email: 'Email',
+    emailPlaceholder: 'you@example.com',
+    password: 'Password',
+    passwordHint: (min: number) => `At least ${min} characters.`,
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+    name: 'Your name',
+    namePlaceholder: 'Ada Lovelace',
+    acceptTermsBefore: 'I agree to the',
+    acceptTermsTerms: 'Terms of Service',
+    acceptTermsAnd: 'and the',
+    acceptTermsPrivacy: 'Privacy Policy',
+    acceptTermsAfter: '.',
+    developmentLink: 'Development: mail goes to the log, so here is the link it carries —',
+    developmentLinkAction: 'open it',
+    login: {
+      eyebrow: 'Sign in',
+      titleTop: 'Welcome back',
+      titleAccent: 'to Milyonuse',
+      lead: 'Sign in with your email and password.',
+      submit: 'Sign in',
+      submitting: 'Signing in…',
+      forgot: 'Forgot your password?',
+      noAccount: 'New to Milyonuse?',
+      createAccount: 'Create an account',
+      passwordReset: 'Your password was changed. Sign in with the new one.',
+    },
+    register: {
+      eyebrow: 'Create an account',
+      titleTop: 'Meet your',
+      titleAccent: 'first agent',
+      lead: 'Free to start. Your personal workspace opens as soon as you confirm your email.',
+      submit: 'Create account',
+      submitting: 'Creating your account…',
+      haveAccount: 'Already have an account?',
+      sentTitle: (email: string) => `Check your inbox at ${email}.`,
+      sentBody: 'We sent a link to confirm the address. Follow it within 24 hours and your workspace opens, ready to use. Nothing is created until then.',
+      sentHelp: 'Nothing arrived? Look in spam, or register again in a few minutes — the new link replaces the old one.',
+    },
+    verify: {
+      eyebrow: 'Confirm your email',
+      titleTop: 'Opening',
+      titleAccent: 'your workspace',
+      working: 'Confirming your address…',
+      failed: 'This link could not be used.',
+      again: 'Register again',
+      missing: 'This page needs the link from your email.',
+    },
+    forgot: {
+      eyebrow: 'Forgot your password',
+      titleTop: 'Set a',
+      titleAccent: 'new password',
+      lead: 'Enter your email and we will send you a link to set a new password.',
+      submit: 'Send the link',
+      submitting: 'Sending…',
+      sentTitle: 'If there is an account for that address, a link is on its way.',
+      sentBody: 'It works once and expires in an hour.',
+      backToLogin: 'Back to sign in',
+    },
+    reset: {
+      eyebrow: 'New password',
+      titleTop: 'Choose',
+      titleAccent: 'a new password',
+      lead: 'Every other session will be signed out.',
+      submit: 'Set password',
+      submitting: 'Setting…',
+      missing: 'This page needs the link from your email.',
+      requestNew: 'Ask for a new link',
+    },
+  },
+  app: {
+    nav: {
+      home: 'Home',
+      agent: 'Agent',
+      agents: 'Agents',
+      teams: 'Teams',
+      automations: 'Automations',
+      memory: 'Memory',
+      connections: 'Connections',
+      settings: 'Settings',
+      groupBuild: 'Build',
+      groupRun: 'Run',
+      groupAccount: 'Account',
+    },
+    personal: 'Personal workspace',
+    home: {
+      eyebrow: 'Home',
+      titleTop: (name: string) => `Welcome, ${name}`,
+      titleAccent: 'your team is getting ready',
+      lead: 'Milyonuse is being built phase by phase. Here is what arrives next in your workspace.',
+      roadmapTitle: 'Coming to your workspace',
+      roadmap: [
+        { title: 'Agent', text: 'Chat with your first agent, with files and live answers.' },
+        { title: 'Verified memory', text: 'What your agents know, where it came from, and how much to trust it.' },
+        { title: 'Tools and connections', text: 'Web research, a code sandbox, files and the apps you connect.' },
+        { title: 'Agent studio and skills', text: 'Design specialists from templates; they learn skills you approve.' },
+        { title: 'Teams', text: 'A lead that delegates to members working in parallel.' },
+        { title: 'Automations', text: 'Proactive and reactive runs, with an inbox for what needs your yes.' },
+      ],
+    },
+    settings: {
+      eyebrow: 'Settings',
+      profileTab: 'Profile',
+      securityTab: 'Security',
+      profile: {
+        titleTop: 'Your',
+        titleAccent: 'profile',
+        lead: 'How Milyonuse addresses you, and the language and time zone it works in.',
+        name: 'Name',
+        email: 'Email',
+        emailHint: 'Your sign-in address. It cannot be changed yet.',
+        locale: 'Language',
+        timeZone: 'Time zone',
+        timeZoneHint: 'Schedules and reminders run in this time zone.',
+      },
+      security: {
+        titleTop: 'Password',
+        titleAccent: 'and sessions',
+        lead: 'Change your password, and see where you are signed in.',
+        passwordTitle: 'Change password',
+        currentPassword: 'Current password',
+        newPassword: 'New password',
+        changePassword: 'Change password',
+        passwordChanged: 'Password changed. Every other session was signed out.',
+        sessionsTitle: 'Where you are signed in',
+        thisDevice: 'This device',
+        lastActive: 'Last active',
+        signedInAt: 'Signed in',
+        unknownDevice: 'Unknown device',
+        endSession: 'Sign out',
+      },
+    },
+  },
+};
+
+type Widen<T> = T extends string
+  ? string
+  : T extends boolean
+    ? boolean
+    : T extends (...args: infer A) => infer R
+      ? (...args: A) => Widen<R>
+      : T extends readonly (infer U)[]
+        ? Widen<U>[]
+        : { [K in keyof T]: Widen<T[K]> };
+
+export type Dictionary = Widen<typeof en>;

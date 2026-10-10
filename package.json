@@ -1,0 +1,31 @@
+{
+  "name": "milyonuse",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.9"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "guard": "pnpm guard:tenancy && pnpm guard:secrets",
+    "guard:tenancy": "bash scripts/guard-tenancy.sh",
+    "guard:secrets": "bash scripts/guard-secrets.sh",
+    "verify": "pnpm guard && pnpm typecheck && pnpm lint && pnpm test && pnpm build",
+    "db:setup": "bash scripts/db-setup.sh",
+    "db:migrate": "pnpm --filter @milyonuse/db migrate",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "dev:api": "pnpm --filter @milyonuse/api dev",
+    "dev:web": "pnpm --filter @milyonuse/web dev"
+  },
+  "devDependencies": {
+    "turbo": "2.11.5",
+    "typescript": "7.0.2",
+    "@types/node": "26.6.3"
+  }
+}

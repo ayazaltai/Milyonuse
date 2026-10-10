@@ -1,0 +1,12 @@
+{
+  "extends": "@milyonuse/config/typescript/node.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    // The migration and seed scripts run as TypeScript under Node's type
+    // stripping, which needs a real `.ts` in a relative import; the compiler
+    // rewrites it to `.js` for dist/.
+    "rewriteRelativeImportExtensions": true
+  },
+  "include": ["src/**/*"]
+}

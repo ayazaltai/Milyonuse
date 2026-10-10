@@ -1,0 +1,13 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "db"
+
+# Install-time build scripts are opt-in, one package at a time. Anything absent
+# here does not execute code during install, so a compromised transitive
+# dependency cannot run on a developer machine or in CI just by being pulled in.
+allowBuilds:
+  esbuild: true # vitest bundling
+  "@tailwindcss/oxide": true # tailwind native engine
+  unrs-resolver: true # eslint module resolution
+  sharp: true # next/image

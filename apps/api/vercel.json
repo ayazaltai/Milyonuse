@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "cd ../.. && pnpm turbo run build --filter=@milyonuse/api && node apps/api/scripts/vercel-output.mjs",
+  "regions": ["fra1"],
+  "fluid": true
+}

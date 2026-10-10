@@ -1,0 +1,24 @@
+{
+  "name": "@milyonuse/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint/base": "./eslint/base.js",
+    "./eslint/node": "./eslint/node.js",
+    "./eslint/next": "./eslint/next.js",
+    "./typescript/base.json": "./typescript/base.json",
+    "./typescript/node.json": "./typescript/node.json",
+    "./typescript/next.json": "./typescript/next.json"
+  },
+  "scripts": {
+    "lint": "echo ok",
+    "typecheck": "echo ok"
+  },
+  "dependencies": {
+    "typescript-eslint": "8.70.1",
+    "@eslint/js": "10.0.1",
+    "globals": "17.12.0",
+    "typescript": "6.0.3"
+  }
+}

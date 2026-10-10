@@ -4,4 +4,5 @@ Each phase writes a delivery report to `docs/delivered/` when it closes. This fi
 
 | Version | Phase | Report | Date |
 |---|---|---|---|
+| 0.1.0 | F0 — Foundation | [F0-delivered.md](docs/delivered/F0-delivered.md) | 2026-10-10 |
 | 0.0.1 | Plan | [PLAN.md](PLAN.md), [docs/](docs) | 2026-10-10 |

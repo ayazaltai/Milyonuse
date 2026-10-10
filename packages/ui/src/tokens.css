@@ -1,0 +1,4078 @@
+/**
+ * Milyonuse design system tokens.
+ *
+ * Source of truth: docs/reference/design-system.md, carried over from the
+ * Milyonus marketing site and the Milyonus platform (docs/SOURCES.md §A, §C).
+ * One brand, so no palette of its own — pure black ground, a single white
+ * opacity scale, glass panels, and brand blue as the only chromatic anchor.
+ * The app runs on Montserrat; the marketing pages pair Inter Tight with
+ * Instrument Serif (DECISIONS D-07). Both read the colours below.
+ *
+ * No colour is defined outside this file.
+ */
+
+:root {
+  /* --- Brand --- */
+  --brand-400: #4c86ff;
+  --brand-500: #2e6bff;
+  --brand-600: #1746c8;
+  --brand-900: #061c5e;
+  --brand-cyan: #5cc8ff;
+
+  /* --- Semantic --- */
+  --pass: #22c55e;   /* completed, granted, healthy */
+  --review: #f5a524; /* needs attention — not an error */
+  --danger: #e1483c; /* destructive, live indicator, failure */
+
+  /* --- Ground --- */
+  --ink: #000000;
+  --fg: #ffffff;
+  /* The glass panel (--w-10 over --ink) as a solid colour: what a chart's
+     surface gaps and marker rings are cut from. */
+  --chart-surface: #1a1a1a;
+
+  /* --- White opacity scale (design.md §2) ---
+     Everything that is not brand or semantic is a step on this scale. One
+     scale rather than separate surface/border/text ramps is what keeps the
+     platform looking like the marketing site instead of adjacent to it. */
+  --w-95: rgba(255, 255, 255, 0.95);
+  --w-80: rgba(255, 255, 255, 0.8);
+  --w-70: rgba(255, 255, 255, 0.7);
+  --w-65: rgba(255, 255, 255, 0.65);
+  --w-60: rgba(255, 255, 255, 0.6);
+  --w-50: rgba(255, 255, 255, 0.5);
+  --w-35: rgba(255, 255, 255, 0.35);
+  --w-20: rgba(255, 255, 255, 0.2);
+  --w-14: rgba(255, 255, 255, 0.14);
+  --w-10: rgba(255, 255, 255, 0.1);
+  --w-08: rgba(255, 255, 255, 0.08);
+  --w-06: rgba(255, 255, 255, 0.06);
+  --w-03: rgba(255, 255, 255, 0.03);
+
+  /* --- Layout --- */
+  --section-pad: clamp(64px, 8vw, 96px) clamp(20px, 4vw, 48px);
+  --content-max: 1200px;
+  --radius-card: 20px;
+  --radius-control: 10px;
+  --radius-pill: 9999px;
+  --sidebar-w: 248px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* --- Marketing (DECISIONS D-07): the accent line's light falls to this grey --- */
+  --mk-accent-fade: #a9b4c6;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--fg);
+  /* --font-montserrat is supplied by next/font; the stack after it is what
+     renders before the face loads and on any surface that does not set it. */
+  font-family: var(--font-montserrat), 'Montserrat', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+::selection {
+  background: rgba(46, 107, 255, 0.35);
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--w-14);
+  border-radius: var(--radius-pill);
+}
+
+/* ============================================================
+   Primitives (design.md §5, §9)
+   ============================================================ */
+
+/* Frosted panel. The platform's default surface — not an accent. */
+.glass {
+  background: var(--w-10);
+  backdrop-filter: blur(56px);
+  -webkit-backdrop-filter: blur(56px);
+  border: 1px solid var(--w-20);
+  border-radius: var(--radius-card);
+  padding: 24px 28px;
+}
+
+/* Panels that hold a table run edge to edge. */
+.glass-flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--w-50);
+  margin: 0;
+}
+
+/**
+ * The accent. Second line of every heading pair.
+ *
+ * The platform runs on one typeface, so the pair is built from weight, slant
+ * and colour rather than from a second family: the upright line sits at 500,
+ * the accent at 300 italic in --w-65. The rhythm of the marketing site's
+ * two-line heading is kept; the serif is not.
+ */
+.accent {
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+}
+
+.pill {
+  display: inline-block;
+  white-space: nowrap;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: inherit;
+  transition: transform 0.2s var(--ease), background 0.2s var(--ease);
+}
+.pill:hover:not(:disabled) {
+  transform: scale(1.04);
+}
+.pill:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.pill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pill-primary {
+  background: var(--fg);
+  color: var(--ink);
+}
+.pill-secondary {
+  background: var(--w-06);
+  border-color: var(--w-14);
+  color: var(--w-80);
+}
+.pill-brand {
+  background: rgba(46, 107, 255, 0.15);
+  border-color: rgba(46, 107, 255, 0.4);
+  color: #8fb6ff;
+}
+.pill-danger {
+  background: transparent;
+  border-color: rgba(225, 72, 60, 0.35);
+  color: #ff8f86;
+}
+.pill-ghost {
+  background: transparent;
+  color: var(--w-50);
+}
+.pill-ghost:hover:not(:disabled) {
+  color: var(--w-80);
+}
+.pill-sm {
+  font-size: 12.5px;
+  padding: 6px 14px;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--pass);
+  animation: live-pulse 1.6s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* ============================================================
+   Platform shell — fixed sidebar + content
+   ============================================================ */
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 16px;
+  background: var(--ink);
+  border-right: 1px solid var(--w-08);
+  overflow-y: auto;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  margin-left: var(--sidebar-w);
+  padding: clamp(32px, 4vw, 56px) clamp(20px, 4vw, 48px) 96px;
+}
+
+.page-max {
+  max-width: 1100px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--fg);
+  font-size: 15px;
+  line-height: 1.15;
+  padding: 0 8px 4px;
+}
+.brand-logo {
+  display: block;
+  height: 28px;
+  width: auto;
+  margin-bottom: 4px;
+}
+.brand-sub {
+  display: block;
+  font-size: 11px;
+  color: var(--w-35);
+  letter-spacing: 0.4px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 28px;
+}
+.nav-group-label {
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--w-35);
+  padding: 16px 12px 6px;
+  margin: 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  color: var(--w-60);
+  font-size: 13.5px;
+  text-decoration: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.18s var(--ease), color 0.18s var(--ease);
+}
+/* Something waiting behind a link — the agent's unread notices (App-Milyonus D-57). Brand blue, the one accent. */
+.nav-count {
+  margin-left: auto;
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--brand-500);
+  color: var(--fg);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
+.nav-item:hover {
+  background: var(--w-06);
+  color: var(--w-80);
+}
+.nav-item-active {
+  background: rgba(46, 107, 255, 0.1);
+  border-color: rgba(46, 107, 255, 0.55);
+  color: var(--fg);
+}
+.nav-item-active svg {
+  color: var(--brand-cyan);
+}
+
+.sidebar-foot {
+  border-top: 1px solid var(--w-08);
+  padding: 16px 8px 0;
+}
+
+/* --- Mobile drawer --- */
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 60;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: rgba(20, 22, 28, 0.72);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--w-10);
+  color: var(--fg);
+  cursor: pointer;
+}
+.scrim {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s var(--ease);
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+  }
+  .sidebar-open {
+    transform: translateX(0);
+  }
+  .sidebar-toggle {
+    display: flex;
+  }
+  .content {
+    margin-left: 0;
+    padding-top: 72px;
+  }
+  .scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* ============================================================
+   Page composition
+   ============================================================ */
+
+.page-head {
+  margin-bottom: 28px;
+}
+.page-title {
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 8px 0 6px;
+}
+.page-lead {
+  font-size: 14px;
+  color: var(--w-50);
+  line-height: 1.6;
+  max-width: 620px;
+  margin: 0;
+}
+
+.grid-auto {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+.grid-tight {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ============================================================
+   Tables — dense data inside a glass panel
+   ============================================================ */
+
+.table-wrap {
+  overflow-x: auto;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.data-table th {
+  text-align: left;
+  padding: 12px 24px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--w-35);
+  border-bottom: 1px solid var(--w-08);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--w-06);
+  color: var(--w-80);
+  vertical-align: middle;
+}
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+.data-table .num {
+  text-align: right;
+}
+.data-table .nowrap {
+  white-space: nowrap;
+}
+.cell-title {
+  color: var(--fg);
+}
+.cell-sub {
+  font-size: 12px;
+  color: var(--w-35);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   Form controls
+   ============================================================ */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--w-60);
+}
+.field-hint {
+  font-size: 11.5px;
+  color: var(--w-35);
+  line-height: 1.5;
+}
+.field-error {
+  font-size: 11.5px;
+  color: #ff8f86;
+}
+
+.control {
+  width: 100%;
+  background: var(--w-06);
+  border: 1px solid var(--w-14);
+  border-radius: var(--radius-control);
+  color: var(--fg);
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-family: inherit;
+  transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
+}
+.control::placeholder {
+  color: var(--w-35);
+}
+.control:focus {
+  outline: none;
+  border-color: rgba(46, 107, 255, 0.55);
+  background: var(--w-08);
+}
+.control-inline {
+  width: auto;
+  padding: 6px 10px;
+  font-size: 12.5px;
+}
+
+/* ============================================================
+   Status pill — colour always accompanied by its label
+   ============================================================ */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--w-10);
+  color: var(--w-50);
+  white-space: nowrap;
+}
+.tag-brand {
+  border-color: rgba(46, 107, 255, 0.4);
+  background: rgba(46, 107, 255, 0.12);
+  color: #8fb6ff;
+}
+.tag-pass {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.12);
+  color: #6ee79f;
+}
+.tag-review {
+  border-color: rgba(245, 165, 36, 0.35);
+  background: rgba(245, 165, 36, 0.12);
+  color: #f7c164;
+}
+.tag-danger {
+  border-color: rgba(225, 72, 60, 0.35);
+  background: rgba(225, 72, 60, 0.12);
+  color: #ff8f86;
+}
+
+/* ============================================================
+   Notice
+   ============================================================ */
+
+.notice {
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 12px 16px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--w-14);
+  background: var(--w-06);
+  color: var(--w-65);
+}
+.notice-brand {
+  border-color: rgba(46, 107, 255, 0.4);
+  background: rgba(46, 107, 255, 0.1);
+  color: #a8c4ff;
+}
+.notice-pass {
+  border-color: rgba(34, 197, 94, 0.32);
+  background: rgba(34, 197, 94, 0.1);
+  color: #8fe9b4;
+}
+.notice-review {
+  border-color: rgba(245, 165, 36, 0.32);
+  background: rgba(245, 165, 36, 0.1);
+  color: #f9cd85;
+}
+.notice-danger {
+  border-color: rgba(225, 72, 60, 0.35);
+  background: rgba(225, 72, 60, 0.1);
+  color: #ffa79f;
+}
+
+/* ============================================================
+   Auth card — the radial-lit glass of design.md §6
+   ============================================================ */
+
+.auth-shell {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(24px, 6vh, 72px) clamp(16px, 4vw, 48px);
+}
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  padding: clamp(24px, 4vw, 36px);
+  border-radius: 24px;
+  border: 1px solid var(--w-14);
+  background: radial-gradient(
+    120% 100% at 50% 0%,
+    rgba(46, 107, 255, 0.14) 0%,
+    rgba(6, 12, 28, 0.78) 50%,
+    rgba(4, 6, 13, 0.92) 100%
+  );
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  animation: card-enter 0.9s var(--ease) both;
+}
+.auth-card-wide {
+  max-width: 560px;
+}
+.auth-title {
+  margin: 12px 0 0;
+  font-size: clamp(26px, 3.6vw, 34px);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+}
+.auth-lead {
+  margin: 14px 0 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--w-60);
+}
+
+/* The AI-app consent page (App-Milyonus MCP D-80): what is asking, where it sends you, what it may do. */
+.consent-facts {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--w-10);
+  background: var(--w-03);
+}
+.consent-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13.5px;
+}
+.consent-facts dt {
+  color: var(--w-50);
+}
+.consent-facts dd {
+  margin: 0;
+  color: var(--w-95);
+  font-weight: 500;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.consent-abilities {
+  margin: 8px 0 16px;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--w-70);
+}
+.auth-foot {
+  margin: 24px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--w-08);
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--w-50);
+}
+
+/* ============================================================
+   Sign-in shell — a lit brand panel beside the form
+   ============================================================ */
+
+.auth-split {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+}
+.auth-brand {
+  position: relative;
+  overflow: hidden;
+  border-right: 1px solid var(--w-08);
+  background: var(--ink);
+}
+/* The rays fade into the ground at the bottom so the copy stays legible. */
+.auth-brand-rays {
+  object-fit: cover;
+  object-position: 50% 0%;
+  opacity: 0.9;
+}
+.auth-brand::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.82) 78%, var(--ink) 100%);
+  pointer-events: none;
+}
+.auth-brand-inner {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+  padding: clamp(32px, 5vw, 64px);
+}
+.auth-brand-title {
+  margin: 14px 0 0;
+  max-width: 17ch;
+  font-size: clamp(34px, 3.4vw, 48px);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+.auth-points {
+  list-style: none;
+  margin: 36px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 440px;
+}
+.auth-points li {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.auth-point-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--w-14);
+  background: var(--w-06);
+  color: var(--brand-cyan);
+}
+.auth-point-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--w-95);
+}
+.auth-point-text {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--w-50);
+}
+.auth-brand-foot {
+  margin: 0;
+  font-size: 12px;
+  color: var(--w-35);
+}
+.auth-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: clamp(24px, 6vh, 72px) clamp(16px, 4vw, 48px);
+}
+/* Shown when the brand panel is not. */
+.auth-main-logo {
+  display: none;
+}
+.auth-legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--w-35);
+}
+.auth-legal a {
+  color: var(--w-50);
+  text-decoration: none;
+  transition: color 0.18s var(--ease);
+}
+.auth-legal a:hover {
+  color: var(--w-80);
+}
+@media (max-width: 960px) {
+  .auth-split {
+    grid-template-columns: 1fr;
+  }
+  .auth-brand {
+    display: none;
+  }
+  .auth-main-logo {
+    display: block;
+  }
+}
+
+/* An input with an icon sitting inside its leading edge. */
+.control-wrap {
+  position: relative;
+  display: block;
+}
+.control-wrap > svg {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--w-35);
+  pointer-events: none;
+}
+.control-wrap > .control {
+  padding-left: 40px;
+}
+/* A password field's show/hide control, in its trailing edge. */
+.control-wrap.has-reveal > .control {
+  padding-right: 48px;
+}
+.control-reveal {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--w-50);
+  cursor: pointer;
+  transition: color 0.18s var(--ease), background 0.18s var(--ease);
+}
+.control-reveal:hover {
+  color: var(--fg);
+  background: var(--w-06);
+}
+.control-reveal:focus-visible {
+  outline: 2px solid rgba(46, 107, 255, 0.55);
+  outline-offset: 1px;
+}
+/* A quiet link at the end of a form row — "Forgot your password?". */
+.form-aside {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+  font-size: 12.5px;
+}
+.control-lg {
+  padding-top: 13px;
+  padding-bottom: 13px;
+  font-size: 14.5px;
+}
+.pill-block {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 13px;
+  padding-bottom: 13px;
+  text-decoration: none;
+}
+.pill-block:hover:not(:disabled) {
+  transform: scale(1.015);
+}
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* A short reassurance under a sign-in form: one icon, one line. */
+.auth-trust {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 20px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--w-50);
+}
+.auth-trust svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--pass);
+}
+
+/* One way into the platform, on the page that explains the ways. */
+.auth-option {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--w-14);
+  background: var(--w-03);
+}
+.auth-option + .auth-option {
+  margin-top: 12px;
+}
+.auth-option h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+.auth-option p {
+  margin: 6px 0 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--w-60);
+}
+.auth-steps {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.auth-steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--w-65);
+}
+.auth-steps li::before {
+  content: counter(step);
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(46, 107, 255, 0.4);
+  background: rgba(46, 107, 255, 0.12);
+  color: #8fb6ff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ============================================================
+   Meter — one value against one limit
+   ============================================================ */
+
+.meter-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--w-08);
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--brand-500);
+  transition: width 0.4s var(--ease);
+}
+.meter-fill-full {
+  background: var(--review);
+}
+
+/* ============================================================
+   Administration — the Phase 6 surfaces (retention, data requests,
+   webhooks, integrations) and the shell's own states.
+   ============================================================ */
+
+/* A quiet way back or sideways: "All campaigns", "Deliveries". */
+.link-quiet {
+  font-size: 12.5px;
+  color: var(--w-50);
+  text-decoration: none;
+  transition: color 0.18s var(--ease);
+}
+.link-quiet:hover {
+  color: var(--w-80);
+}
+
+/* A button that reads as a quiet link: an action beside a panel's title. */
+.link-button {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--w-50);
+  white-space: nowrap;
+  transition: color 0.18s var(--ease);
+}
+.link-button:hover {
+  color: var(--w-80);
+}
+
+/* Buttons at the end of a table row. */
+.row-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* A machine identifier a person copies by hand — a signing secret, a
+   request id. Spaced rather than set in a second family (§4.4). */
+.secret {
+  font-family: inherit;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  word-break: break-all;
+  color: var(--fg);
+}
+
+/* Before and after, as recorded. Read, not edited. */
+.code-block {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  max-height: 260px;
+  overflow: auto;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--w-08);
+  background: var(--w-03);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  color: var(--w-65);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* A numbered list the reader builds: questions in a set. */
+.builder-item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 16px 0;
+  border-top: 1px solid var(--w-08);
+}
+.builder-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* Where a page is while its data is on the way. The panel's own shape,
+   without its contents — no spinner, nothing that moves unless it may. */
+.skeleton {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--w-08);
+  background: var(--w-06);
+  animation: skeleton-breathe 1.6s ease-in-out infinite;
+}
+.skeleton-line {
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: var(--w-08);
+}
+@keyframes skeleton-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* ============================================================
+   Reporting a problem (0044)
+   ============================================================ */
+
+/* A native dialog, dressed as the candidate card: the same frosted, lit
+   surface wherever someone stops to say something is wrong. */
+.dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  margin: auto;
+  padding: clamp(20px, 4vw, 32px);
+  border-radius: 24px;
+  border: 1px solid var(--w-14);
+  background: radial-gradient(
+    120% 100% at 50% 0%,
+    rgba(46, 107, 255, 0.14) 0%,
+    rgba(6, 12, 28, 0.9) 50%,
+    rgba(4, 6, 13, 0.96) 100%
+  );
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  color: var(--fg);
+}
+.dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+.dialog-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.dialog-title {
+  margin: 8px 0 0;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* One of a few answers, said in the reporter's terms — a radio as a card. */
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.choice {
+  flex: 1 1 150px;
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--w-14);
+  background: var(--w-06);
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
+}
+.choice[aria-checked='true'] {
+  border-color: var(--brand-500);
+  background: rgba(46, 107, 255, 0.12);
+}
+.choice:focus-visible {
+  outline: 2px solid var(--brand-cyan);
+  outline-offset: 2px;
+}
+.choice-title {
+  font-weight: 500;
+}
+.choice-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--w-35);
+}
+
+/* The way in — quiet, present on every surface, never in the way. */
+.report-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--w-50);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--w-20);
+  cursor: pointer;
+}
+.report-link:hover {
+  color: var(--fg);
+}
+
+/* Terms, Privacy, Service — on every surface, in the footer's own voice. */
+.legal-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+}
+.legal-links a,
+.auth-legal .report-link {
+  font-size: 12px;
+  color: var(--w-50);
+  text-decoration: none;
+  transition: color 0.18s var(--ease);
+}
+.legal-links a:hover,
+.auth-legal .report-link:hover {
+  color: var(--w-80);
+}
+/* A link inside a sentence: underlined, so it is never colour alone. */
+.link-inline {
+  color: var(--w-80);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--w-35);
+}
+.link-inline:hover {
+  color: var(--fg);
+}
+.sidebar-legal {
+  justify-content: flex-start;
+  gap: 4px 12px;
+  padding: 10px 12px 0;
+}
+.sidebar-legal a {
+  font-size: 11.5px;
+  color: var(--w-35);
+}
+
+/* A spinner on a surface that marks it the brand's way (the live interview). */
+.spinner-cyan {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(92, 200, 255, 0.3);
+  border-top-color: var(--brand-cyan);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Activity (0046): a person's periods as bars, and pages and features ranked
+   on one scale. Brand blue is the use; the white scale is its absence. */
+.spark {
+  display: block;
+}
+.spark-bar {
+  fill: var(--brand-500);
+}
+.spark-bar-zero {
+  fill: var(--w-10);
+}
+.use-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.use-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.use-label {
+  font-size: 13px;
+  color: var(--w-80);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.use-count {
+  font-size: 12px;
+  color: var(--w-35);
+  white-space: nowrap;
+}
+.use-count strong {
+  color: var(--fg);
+  font-weight: 500;
+}
+.use-last {
+  font-size: 11.5px;
+  color: var(--w-35);
+  margin: 5px 0 0;
+}
+
+/* Usage (0047): spend nothing tracks, each with what kind of gap it is. */
+.gap-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+.gap-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+.gap-label {
+  font-size: 13.5px;
+  color: var(--w-80);
+}
+.gap-amount {
+  margin-left: auto;
+  font-size: 12.5px;
+  color: var(--fg);
+  white-space: nowrap;
+}
+.gap-detail {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--w-50);
+  margin: 6px 0 0;
+}
+
+/* ============================================================
+   Milyonus Agent — /agent (App-Milyonus New-Agent-Page §3)
+   A conversation and the proposals it makes. No colour of its own: the
+   person's words sit on brand blue, the agent's on the white scale, and a
+   proposal is a card like every other surface.
+   ============================================================ */
+
+
+
+.agent-text p {
+  margin: 0;
+}
+.agent-text > * + * {
+  margin-top: 8px;
+}
+.agent-text ul,
+.agent-text ol {
+  margin: 0;
+  padding-left: 18px;
+}
+.agent-text li + li {
+  margin-top: 2px;
+}
+.agent-text strong {
+  font-weight: 600;
+  color: var(--fg);
+}
+/* A name or an id the agent quotes. Montserrat, spaced — no monospace (§4.4). */
+.agent-code {
+  letter-spacing: 0.04em;
+  background: var(--w-08);
+  padding: 1px 5px;
+  border-radius: 5px;
+}
+
+.agent-card {
+  align-self: stretch;
+  padding: 18px 20px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--w-14);
+  background: var(--w-06);
+}
+.agent-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.agent-card-title {
+  margin: 10px 0 4px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.agent-card-summary {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--w-50);
+}
+.agent-card-table {
+  margin-top: 14px;
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid var(--w-08);
+  border-radius: var(--radius-control);
+}
+.agent-card-more {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--w-35);
+}
+.agent-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+.agent-card-note {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--w-35);
+}
+/* A second person's approval on a proposal card (App-Milyonus D-58): waiting in amber, the decision in its colour. */
+.agent-card-approval {
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--w-10);
+  background: var(--w-03);
+  font-size: 12.5px;
+  color: var(--w-80);
+}
+.agent-card-approval .agent-card-note {
+  margin-left: 0;
+}
+.agent-card-approval[data-decision='waiting'] {
+  border-color: var(--review);
+  color: var(--w-80);
+}
+.agent-card-approval[data-decision='approved'] strong {
+  color: var(--pass);
+  font-weight: 500;
+}
+.agent-card-approval[data-decision='declined'] strong {
+  color: var(--danger);
+  font-weight: 500;
+}
+.agent-card-result {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--w-65);
+}
+.agent-card-result p {
+  margin: 0;
+}
+.agent-card-failures {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: var(--w-60);
+}
+.agent-card-failures li + li {
+  margin-top: 3px;
+}
+.agent-card-links {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+.agent-card-links li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-top: 1px solid var(--w-06);
+  font-size: 12.5px;
+  color: var(--w-65);
+}
+.agent-progress {
+  margin-top: 14px;
+}
+.agent-progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  color: var(--w-60);
+}
+
+/* ============================================================
+   Milyonus Agent — the workspace (App-Milyonus Agent-UI-Plan §4)
+   A quiet control room: a thread rail on the left, one stage, and a single
+   light source — the composer's frame. Flat surfaces told apart by the white
+   scale; brand blue only where attention belongs. No icons: the mark, words.
+   ============================================================ */
+
+/* The agent takes the whole content column: no page padding, no max width. */
+.content:has(.agent-app) {
+  padding: 0;
+}
+.page-max:has(.agent-app) {
+  max-width: none;
+}
+
+.agent-app {
+  display: grid;
+  grid-template-columns: 272px minmax(0, 1fr);
+  height: 100vh;
+  min-height: 560px;
+  background: var(--ink);
+}
+.agent-app[data-rail='closed'] {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
+/* ─── the rail ─────────────────────────────────────────────── */
+.agent-rail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--w-06);
+  background: var(--w-03);
+  transition: opacity 0.2s var(--ease);
+}
+.agent-app[data-rail='closed'] .agent-rail {
+  opacity: 0;
+  pointer-events: none;
+  border-right: 0;
+}
+.agent-rail-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px 14px;
+}
+.agent-mark {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.agent-mark img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: none;
+}
+.agent-rail-name {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--fg);
+}
+.agent-rail-name span {
+  font-weight: 300;
+  font-style: italic;
+  color: var(--w-60);
+}
+.agent-rail-new {
+  margin: 0 12px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--w-10);
+  background: transparent;
+  color: var(--w-95);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.agent-rail-new:hover {
+  background: var(--w-06);
+  border-color: var(--w-20);
+}
+.agent-kbd {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--w-35);
+}
+.agent-rail-search {
+  margin: 0 12px 8px;
+}
+.agent-rail-search input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  background: var(--w-06);
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s var(--ease);
+}
+.agent-rail-search input::placeholder {
+  color: var(--w-35);
+}
+.agent-rail-search input:focus {
+  border-color: var(--w-20);
+}
+.agent-threads {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 8px 16px;
+}
+.agent-group + .agent-group {
+  margin-top: 14px;
+}
+.agent-group-label {
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--w-35);
+}
+.agent-thread-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  transition: background 0.12s var(--ease);
+}
+.agent-thread-row:hover,
+.agent-thread-row[data-menu='open'] {
+  background: var(--w-06);
+}
+.agent-thread-row[aria-current='true'] {
+  background: var(--w-08);
+}
+.agent-thread-row[aria-current='true']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--brand-500);
+}
+.agent-thread-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 4px 8px 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.agent-thread-title {
+  font-size: 13.5px;
+  color: var(--w-80);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.agent-thread-row[aria-current='true'] .agent-thread-title {
+  color: var(--fg);
+}
+.agent-thread-sub {
+  font-size: 11.5px;
+  color: var(--w-35);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.agent-thread-more {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin-right: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--w-50);
+  font: inherit;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s var(--ease), background 0.12s var(--ease);
+}
+.agent-thread-row:hover .agent-thread-more,
+.agent-thread-row[data-menu='open'] .agent-thread-more,
+.agent-thread-more:focus-visible {
+  opacity: 1;
+}
+.agent-thread-more:hover {
+  background: var(--w-10);
+  color: var(--fg);
+}
+.agent-rail-empty {
+  padding: 20px 12px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--w-35);
+}
+.agent-rail-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 18px;
+  border-top: 1px solid var(--w-06);
+}
+.agent-rail-usage {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--w-50);
+}
+.agent-rail-track {
+  height: 3px;
+  border-radius: 3px;
+  background: var(--w-08);
+  overflow: hidden;
+}
+.agent-rail-track > span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--brand-500);
+  transition: width 0.4s var(--ease);
+}
+
+/* ─── the stage ────────────────────────────────────────────── */
+.agent-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.agent-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 10px 20px;
+}
+.agent-top-title {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--w-80);
+}
+.agent-top-title > span:first-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.agent-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--w-60);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.agent-ghost:hover {
+  background: var(--w-06);
+  color: var(--fg);
+}
+.agent-ghost[data-variant='outline'] {
+  border-color: var(--w-10);
+  color: var(--w-80);
+}
+.agent-ghost[data-variant='danger']:hover {
+  color: var(--danger);
+}
+.agent-ghost:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.agent-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--w-10);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--w-60);
+}
+.agent-badge[data-tone='brand'] {
+  border-color: var(--brand-600);
+  color: var(--brand-cyan);
+}
+.agent-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+.agent-column {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* The empty stage: one greeting, one composer, what to ask. */
+.agent-hero {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 0 12vh;
+}
+.agent-hero-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  animation: agent-rise 0.6s var(--ease) both;
+}
+.agent-greeting {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(26px, 3.2vw, 34px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  animation: agent-rise 0.6s 0.05s var(--ease) both;
+}
+.agent-greeting-sub {
+  margin: 8px 0 30px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--w-60);
+  animation: agent-rise 0.6s 0.1s var(--ease) both;
+}
+/* A person the product has no name for is asked once, under the greeting (App-Milyonus D-51). */
+.agent-name-ask {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: -14px 0 24px;
+  font-size: 13px;
+  color: var(--w-60);
+  animation: agent-rise 0.6s 0.12s var(--ease) both;
+}
+.agent-name-ask .control {
+  width: min(240px, 100%);
+}
+.agent-hero .agent-composer {
+  animation: agent-rise 0.6s 0.15s var(--ease) both;
+}
+.agent-tasks {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: agent-rise 0.6s 0.22s var(--ease) both;
+}
+.agent-task {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--w-70);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+.agent-task:hover {
+  background: var(--w-06);
+  color: var(--fg);
+}
+.agent-task:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.agent-task-logo {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--w-06);
+  border: 1px solid var(--w-08);
+}
+.agent-task-scale {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 11.5px;
+  color: var(--w-35);
+}
+
+/* The composer — the one lit surface on the page. */
+.agent-composer {
+  position: relative;
+  border-radius: 22px;
+  padding: 14px 14px 12px 18px;
+  background: var(--w-03);
+  border: 1px solid var(--brand-600);
+  box-shadow:
+    0 0 0 1px var(--brand-900),
+    0 0 36px -8px var(--brand-600);
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.agent-composer:focus-within {
+  border-color: var(--brand-500);
+  box-shadow:
+    0 0 0 1px var(--brand-600),
+    0 0 48px -6px var(--brand-500);
+}
+.agent-composer[data-disabled='true'] {
+  border-color: var(--w-10);
+  box-shadow: none;
+}
+.agent-composer-dot {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand-cyan);
+}
+.agent-composer-dot[data-state='standin'] {
+  background: var(--review);
+}
+.agent-composer-dot[data-state='off'] {
+  background: var(--danger);
+}
+.agent-composer textarea {
+  display: block;
+  width: 100%;
+  min-height: 56px;
+  max-height: 260px;
+  padding: 2px 24px 0 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.agent-composer textarea::placeholder {
+  color: var(--w-35);
+}
+.agent-placeholder {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  right: 48px;
+  pointer-events: none;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--w-35);
+}
+.agent-placeholder strong {
+  font-weight: 600;
+  color: var(--w-60);
+}
+.agent-composer-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+/* The composer's settings: one quiet line each, label then value (App-Milyonus D-73). */
+.agent-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  min-width: 0;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--w-08);
+  background: var(--w-03);
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+.agent-pill:hover:not(:disabled) {
+  border-color: var(--w-20);
+  background: var(--w-06);
+}
+.agent-pill:focus-visible {
+  outline: none;
+  border-color: var(--w-35);
+}
+.agent-pill:disabled {
+  cursor: default;
+}
+.agent-pill-label {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--w-35);
+}
+.agent-pill-value {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--w-80);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The mode says itself at a glance: a point, lit for Auto-accept, hollow for Plan. */
+.agent-pill[data-mode]::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--w-35);
+}
+.agent-pill[data-mode='auto']::before {
+  background: var(--brand-cyan);
+  box-shadow: 0 0 6px var(--brand-cyan);
+}
+.agent-pill[data-mode='plan']::before {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--w-50);
+}
+.agent-pill[data-mode='auto'] .agent-pill-value {
+  color: var(--fg);
+}
+/* On a phone the values say enough; the labels stay for screen readers. */
+@media (max-width: 600px) {
+  .agent-pill {
+    padding: 0 10px;
+  }
+  .agent-pill-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .agent-pill-value {
+    max-width: 96px;
+  }
+}
+.agent-square {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--w-10);
+  background: var(--w-03);
+  color: var(--w-80);
+  font: inherit;
+  font-size: 19px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease), transform 0.1s var(--ease);
+}
+.agent-square:hover:not(:disabled) {
+  background: var(--w-08);
+  border-color: var(--w-20);
+}
+.agent-square:active:not(:disabled) {
+  transform: scale(0.95);
+}
+.agent-square:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.agent-square[data-variant='send'] {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--ink);
+  font-weight: 600;
+}
+.agent-square[data-variant='send']:hover:not(:disabled) {
+  background: var(--w-80);
+}
+.agent-square[data-variant='send']:disabled {
+  background: var(--w-20);
+  border-color: transparent;
+  opacity: 1;
+  color: var(--w-50);
+}
+/* While a turn runs, Send becomes Stop (App-Milyonus D-52): quiet, never the composer's light. */
+.agent-square[data-variant='stop'] {
+  background: var(--w-08);
+  border-color: var(--w-20);
+  color: var(--fg);
+  font-size: 12px;
+}
+.agent-square[data-variant='stop']:disabled {
+  opacity: 0.5;
+}
+.agent-spacer {
+  flex: 1;
+}
+.agent-count {
+  align-self: center;
+  font-size: 11px;
+  color: var(--w-35);
+}
+.agent-tables {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.agent-table-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--w-10);
+  background: var(--w-06);
+  font-size: 12.5px;
+  color: var(--w-80);
+  animation: agent-pop 0.25s var(--ease) both;
+}
+.agent-table-chip small {
+  color: var(--w-50);
+  font-size: 11.5px;
+}
+.agent-table-chip button {
+  border: 0;
+  background: none;
+  color: var(--w-50);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.agent-table-chip button:hover {
+  background: var(--w-10);
+  color: var(--fg);
+}
+.agent-dock {
+  padding: 8px 0 18px;
+  background: linear-gradient(to top, var(--ink) 70%, transparent);
+}
+.agent-dock-note {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--w-35);
+}
+.agent-readonly {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px dashed var(--w-14);
+  font-size: 13px;
+  color: var(--w-60);
+}
+
+/* ─── the thread ───────────────────────────────────────────── */
+.agent-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 12px 0 24px;
+}
+.agent-turn-user {
+  align-self: flex-end;
+  max-width: 78%;
+  padding: 12px 16px;
+  border-radius: 18px 18px 6px 18px;
+  background: var(--w-08);
+  color: var(--w-95);
+  font-size: 14.5px;
+  line-height: 1.6;
+  animation: agent-rise 0.3s var(--ease) both;
+}
+.agent-turn-agent {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 14px;
+  animation: agent-rise 0.35s var(--ease) both;
+}
+.agent-avatar {
+  display: flex;
+  margin-top: -2px;
+}
+.agent-turn-body {
+  min-width: 0;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--w-80);
+}
+.agent-turn-body > * + * {
+  margin-top: 12px;
+}
+.agent-trace {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.agent-trace span {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--w-06);
+  font-size: 11.5px;
+  color: var(--w-50);
+}
+.agent-thinking {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13.5px;
+  color: var(--w-50);
+}
+.agent-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+.agent-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand-cyan);
+  animation: agent-dot 1.2s var(--ease) infinite;
+}
+.agent-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.agent-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.agent-thinking-text {
+  animation: agent-fade 0.4s var(--ease) both;
+}
+.agent-written {
+  color: var(--w-90);
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+/* Found by search (App-Milyonus D-65): the words marked, the message lit briefly once opened. */
+.agent-hit mark {
+  background: none;
+  color: var(--brand-cyan);
+}
+.agent-hit {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+}
+.agent-turn-user[data-found],
+.agent-turn-agent[data-found] {
+  outline: 1px solid var(--brand-cyan);
+  outline-offset: 6px;
+  border-radius: 14px;
+  transition: outline-color 0.6s var(--ease);
+}
+/* A suggestion from the reader's own day (App-Milyonus D-64). */
+.agent-task[data-today] .agent-task-scale {
+  color: var(--brand-cyan);
+}
+/* What readers said about a message or the conversation (App-Milyonus D-67). */
+.agent-remarks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding-left: 12px;
+  border-left: 2px solid var(--w-10);
+  text-align: left;
+}
+.agent-turn-user .agent-remarks {
+  border-left-color: var(--w-14);
+}
+.agent-remark-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  font-size: 11.5px;
+  color: var(--w-40);
+}
+.agent-remark-who {
+  font-weight: 500;
+  color: var(--w-70);
+}
+.agent-remark-body {
+  margin: 3px 0 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--w-80);
+  white-space: pre-wrap;
+}
+.agent-remark[data-withdrawn] .agent-remark-body {
+  font-style: italic;
+  color: var(--w-40);
+}
+.agent-conversation-remarks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--w-08);
+}
+.agent-conversation-remarks .agent-remarks {
+  align-self: stretch;
+}
+/* Connected apps — Milyonus over MCP (App-Milyonus MCP D-86). */
+.agent-connections {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.agent-connections-url {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--w-10);
+  background: var(--w-03);
+}
+.agent-connections-url code {
+  flex: 1;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--w-95);
+  overflow-wrap: anywhere;
+}
+.agent-connections-steps {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--w-70);
+}
+.agent-connections-note {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--w-50);
+}
+.agent-connections-refusal {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--danger);
+  font-size: 13px;
+  color: var(--w-80);
+}
+/* Scheduled tasks (App-Milyonus D-68). */
+.agent-rail-schedules {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 12.5px;
+  text-align: left;
+}
+.agent-schedules {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.agent-schedule {
+  padding: 12px 14px;
+  border: 1px solid var(--w-08);
+  border-radius: 12px;
+  background: var(--w-03);
+}
+.agent-schedule[data-paused] {
+  opacity: 0.65;
+}
+.agent-schedule-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 13.5px;
+  color: var(--w-90);
+}
+.agent-schedule-head span {
+  font-size: 12px;
+  color: var(--w-50);
+}
+.agent-schedule-prompt {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--w-70);
+}
+.agent-schedule-meta {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  color: var(--w-40);
+}
+/* Naming who may read a conversation (App-Milyonus D-67). */
+.agent-people {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: -4px 0 10px 30px;
+}
+.agent-people-list {
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.agent-people-empty {
+  padding: 8px 2px;
+  font-size: 12.5px;
+  color: var(--w-40);
+}
+.agent-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 4px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--w-80);
+  cursor: pointer;
+}
+.agent-person:hover {
+  background: var(--w-06);
+}
+/* Under a message: edit, ask again, and whether an answer helped (App-Milyonus D-62, D-63). */
+.agent-message-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 14px;
+  margin-top: 8px;
+}
+.agent-turn-agent .agent-message-actions {
+  justify-content: flex-start;
+}
+/* Under a person's message, outside its bubble: the bubble keeps its own size. */
+.agent-turn-user {
+  position: relative;
+}
+.agent-turn-user > .agent-message-actions[data-quiet] {
+  position: absolute;
+  right: 6px;
+  top: 100%;
+  margin-top: 4px;
+}
+.agent-message-actions[data-quiet] {
+  opacity: 0;
+  transition: opacity 0.15s var(--ease);
+}
+.agent-turn-user:hover .agent-message-actions[data-quiet],
+.agent-turn-agent:hover .agent-message-actions[data-quiet],
+.agent-message-actions[data-quiet]:focus-within {
+  opacity: 1;
+}
+@media (hover: none) {
+  .agent-message-actions[data-quiet] {
+    opacity: 1;
+  }
+}
+.agent-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--w-50);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s var(--ease);
+}
+.agent-link:hover,
+.agent-link:focus-visible {
+  color: var(--w-90);
+}
+.agent-link[data-on] {
+  color: var(--brand-cyan);
+}
+.agent-link:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.agent-turn-user[data-editing] {
+  width: 78%;
+}
+.agent-edit {
+  width: 100%;
+  resize: vertical;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--w-95);
+  font: inherit;
+  line-height: 1.6;
+}
+.agent-feedback {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  max-width: 520px;
+}
+.agent-feedback .control {
+  flex: 1;
+}
+/* What a later edit superseded: kept, folded (App-Milyonus D-62). */
+.agent-earlier {
+  border-left: 2px solid var(--w-08);
+  padding-left: 14px;
+}
+.agent-earlier > summary {
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--w-40);
+  list-style: none;
+}
+.agent-earlier > summary::-webkit-details-marker {
+  display: none;
+}
+.agent-earlier > summary:hover {
+  color: var(--w-70);
+}
+.agent-earlier-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 14px;
+  opacity: 0.6;
+}
+/* Where the agent's summary of the conversation ends (App-Milyonus D-76): every message stays above it. */
+.agent-memory {
+  border-top: 1px solid var(--w-08);
+  padding-top: 12px;
+}
+.agent-memory > summary {
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--w-50);
+  list-style: none;
+  text-align: center;
+}
+.agent-memory > summary::-webkit-details-marker {
+  display: none;
+}
+.agent-memory > summary:hover {
+  color: var(--w-70);
+}
+.agent-memory-body {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--w-08);
+  background: var(--w-03);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--w-70);
+}
+.agent-alert {
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--danger);
+  background: var(--w-03);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--w-80);
+  animation: agent-rise 0.3s var(--ease) both;
+}
+.agent-alert[data-tone='review'] {
+  border-color: var(--review);
+}
+.agent-alert strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--fg);
+  font-weight: 600;
+}
+.agent-turn-user .chip-list {
+  margin-top: 8px;
+}
+
+/* ─── menus and dialogs ───────────────────────────────────── */
+.agent-menu {
+  position: fixed;
+  z-index: 80;
+  min-width: 200px;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--w-10);
+  background: var(--chart-surface);
+  animation: agent-pop 0.16s var(--ease) both;
+}
+.agent-menu button {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--w-80);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.agent-menu button:hover,
+.agent-menu button:focus-visible {
+  background: var(--w-08);
+  color: var(--fg);
+  outline: none;
+}
+.agent-menu button[data-tone='danger'] {
+  color: var(--danger);
+}
+.agent-menu button[aria-checked='true']::after {
+  content: '●';
+  font-size: 8px;
+  color: var(--brand-cyan);
+}
+.agent-menu hr {
+  margin: 5px 4px;
+  border: 0;
+  border-top: 1px solid var(--w-08);
+}
+.agent-menu[data-described] {
+  box-sizing: border-box;
+  width: 280px;
+  max-width: calc(100vw - 16px);
+}
+.agent-menu[data-described] button {
+  align-items: flex-start;
+}
+.agent-menu[data-described] button[aria-checked='true']::after {
+  margin-top: 5px;
+}
+.agent-menu-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.agent-menu-desc {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--w-50);
+  white-space: normal;
+}
+.agent-menu button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.agent-menu button:disabled:hover {
+  background: none;
+}
+.agent-menu-label {
+  padding: 6px 10px 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--w-35);
+}
+.agent-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  animation: agent-fade 0.18s var(--ease) both;
+}
+.agent-dialog {
+  width: min(480px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid var(--w-10);
+  background: var(--chart-surface);
+  animation: agent-dialog 0.22s var(--ease) both;
+}
+.agent-dialog h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--fg);
+}
+.agent-dialog h2 em {
+  font-weight: 300;
+  color: var(--w-60);
+}
+.agent-dialog-lead {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--w-60);
+}
+.agent-dialog-body {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.agent-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 24px;
+}
+.agent-choice {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--w-10);
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+.agent-choice:hover {
+  background: var(--w-03);
+}
+.agent-choice:has(input:checked) {
+  border-color: var(--brand-500);
+  background: var(--w-03);
+}
+.agent-choice:has(input:disabled) {
+  opacity: 0.45;
+  cursor: default;
+}
+.agent-choice input {
+  margin: 3px 0 0;
+  accent-color: var(--brand-500);
+}
+.agent-choice strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg);
+}
+.agent-choice span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--w-50);
+}
+.agent-facts {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 10px 16px;
+  margin: 0;
+  font-size: 13px;
+}
+.agent-facts dt {
+  color: var(--w-50);
+}
+.agent-facts dd {
+  margin: 0;
+  color: var(--w-95);
+  overflow-wrap: anywhere;
+}
+/* The organization's house instructions, kept as they were written (App-Milyonus D-54). */
+.agent-facts dd.agent-facts-long {
+  white-space: pre-wrap;
+  max-height: 180px;
+  overflow: auto;
+  font-size: 12.5px;
+  color: var(--w-65);
+}
+.agent-toast {
+  position: fixed;
+  z-index: 95;
+  left: calc(50% + var(--sidebar-w) / 2);
+  bottom: 132px;
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--w-14);
+  background: var(--chart-surface);
+  font-size: 13px;
+  color: var(--w-95);
+  animation: agent-toast 2.6s var(--ease) both;
+}
+
+@keyframes agent-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes agent-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes agent-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes agent-dialog {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes agent-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+@keyframes agent-toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  10%,
+  85% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agent-app *,
+  .agent-overlay,
+  .agent-dialog,
+  .agent-menu,
+  .agent-toast {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .agent-app,
+  /* The list floats over the thread here, open or not: the thread keeps the whole width. */
+  .agent-app[data-rail='closed'] {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    min-height: 100vh;
+  }
+  .agent-rail {
+    display: none;
+  }
+  .agent-app[data-rail='open'] .agent-rail {
+    display: flex;
+    position: fixed;
+    z-index: 70;
+    inset: 0 auto 0 0;
+    width: 300px;
+    background: var(--ink);
+  }
+}
+@media (max-width: 560px) {
+  .agent-column {
+    padding: 0 14px;
+  }
+  .agent-turn-user {
+    max-width: 92%;
+  }
+  .agent-task-scale,
+  .agent-count {
+    display: none;
+  }
+}
+
+/* ── Agent cards (App-Milyonus Agent-Control-Plan §2.5): steps, data, the reader's view ── */
+.agent-view { position: relative; }
+.agent-view-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 40;
+  width: 280px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--w-10);
+  background: var(--chart-surface);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.6);
+  display: grid;
+  gap: 12px;
+  animation: agent-fade 0.2s var(--ease) both;
+}
+.agent-view-row { display: grid; gap: 6px; font-size: 12px; color: var(--w-50); }
+.agent-segment {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--w-06);
+}
+.agent-segment button {
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--w-60);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.agent-segment button[aria-checked='true'] { background: var(--w-14); color: var(--fg); }
+.agent-view-reset {
+  justify-self: start;
+  border: 0;
+  background: none;
+  color: var(--brand-cyan);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.agent-steps {
+  margin-bottom: 10px;
+  border: 1px solid var(--w-08);
+  border-radius: 12px;
+  background: var(--w-03);
+  overflow: hidden;
+}
+.agent-steps[data-live] { border-color: var(--brand-500); }
+.agent-steps-head {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  color: var(--w-60);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.agent-steps-title { font-weight: 500; }
+.agent-steps-fold { color: var(--w-35); }
+.agent-steps-body { padding: 0 12px 12px; display: grid; gap: 10px; }
+.agent-steps-reasoning {
+  margin: 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--w-14);
+  font-size: 12.5px;
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--w-50);
+  white-space: pre-wrap;
+  max-height: 260px;
+  overflow: auto;
+}
+.agent-steps-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.agent-steps-list li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 12.5px;
+  color: var(--w-70);
+  animation: agent-fade 0.3s var(--ease) both;
+}
+.agent-steps-list li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brand-500);
+  animation: agent-pulse 1.2s ease-in-out infinite;
+}
+.agent-steps-list li[data-done]::before { background: var(--pass); animation: none; }
+@keyframes agent-pulse { 50% { opacity: 0.35; } }
+
+/* An approver reads the whole card before deciding (App-Milyonus D-58). */
+.agent-approval-body {
+  display: grid;
+  gap: 14px;
+  max-height: min(62vh, 640px);
+  overflow: auto;
+}
+
+/* What the agent has to tell the reader (App-Milyonus D-57): a quiet section of the rail. */
+.agent-notices {
+  margin: 0 0 6px;
+  border-radius: 12px;
+}
+.agent-notices[data-open] {
+  background: var(--w-03);
+  border: 1px solid var(--w-08);
+}
+.agent-notices-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--w-60);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.agent-notices-head:hover {
+  color: var(--fg);
+}
+.agent-notices-count {
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--brand-500);
+  color: var(--fg);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
+.agent-notices-caret {
+  color: var(--w-35);
+}
+.agent-notices-body {
+  padding: 0 6px 8px;
+}
+.agent-notices-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow: auto;
+}
+.agent-notice {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 8px 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  position: relative;
+}
+.agent-notice:hover {
+  background: var(--w-06);
+}
+.agent-notice[data-unread]::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 14px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--brand-500);
+}
+.agent-notice-title {
+  font-size: 12.5px;
+  color: var(--w-80);
+}
+.agent-notice[data-unread] .agent-notice-title {
+  color: var(--fg);
+}
+.agent-notice-body {
+  font-size: 11.5px;
+  color: var(--w-50);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.agent-notice-time {
+  font-size: 11px;
+  color: var(--w-35);
+}
+.agent-notices-empty {
+  margin: 4px 8px 6px;
+  font-size: 12px;
+  color: var(--w-35);
+}
+.agent-notices-foot {
+  display: flex;
+  align-items: center;
+  padding-top: 4px;
+}
+.agent-notices-foot .agent-ghost {
+  font-size: 12px;
+  padding: 5px 8px;
+}
+.agent-prefs {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+.agent-prefs > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px;
+  align-items: center;
+  gap: 12px;
+}
+.agent-prefs dt {
+  font-size: 13px;
+  color: var(--w-80);
+}
+.agent-prefs dd {
+  margin: 0;
+}
+@media (max-width: 560px) {
+  .agent-prefs > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+.agent-pinned { display: grid; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--w-08); }
+.agent-data {
+  border: 1px solid var(--w-10);
+  border-radius: 16px;
+  background: var(--w-03);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+  animation: agent-fade 0.35s var(--ease) both;
+}
+.agent-data[data-pinned] { border-color: var(--brand-500); }
+.agent-data-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px 10px;
+}
+.agent-data-title { margin: 0; font-size: 14.5px; font-weight: 500; color: var(--fg); }
+.agent-data-sub { margin: 2px 0 0; font-size: 12.5px; font-style: italic; font-weight: 300; color: var(--w-50); }
+/* Where a card's values came from (App-Milyonus D-46): the platform's own answer, or the agent's writing. */
+.agent-data-origin { margin: 4px 0 0; font-size: 11.5px; letter-spacing: 0.01em; color: var(--w-35); }
+.agent-data[data-origin='agent'] { border-style: dashed; }
+.agent-data[data-origin='agent'] .agent-data-origin { font-style: italic; font-weight: 300; color: var(--review); }
+.agent-data-tools { display: flex; gap: 2px; align-items: center; flex-wrap: wrap; }
+.agent-data-tools .agent-ghost { padding: 5px 9px; font-size: 12px; }
+.agent-data-search {
+  width: 140px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--w-10);
+  background: var(--w-03);
+  color: var(--fg);
+  font: inherit;
+  font-size: 12.5px;
+}
+.agent-data-body { padding: 0 16px 16px; }
+.agent-data-table-wrap { overflow: auto; max-height: 420px; border-radius: 10px; border: 1px solid var(--w-06); }
+.agent-data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.agent-data-table th {
+  position: sticky;
+  top: 0;
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--chart-surface);
+  color: var(--w-50);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.agent-data-table td { padding: 7px 10px; border-top: 1px solid var(--w-06); color: var(--w-80); }
+.agent-data-table tr:hover td { background: var(--w-03); }
+.agent-data-empty { margin: 10px; font-size: 12.5px; color: var(--w-35); }
+.agent-data-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.agent-data-stat {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--w-06);
+}
+.agent-data-stat-value { font-size: 22px; font-weight: 500; color: var(--fg); }
+.agent-data-stat-label { font-size: 12px; color: var(--w-60); }
+.agent-data-hint { display: block; font-size: 11.5px; font-style: italic; font-weight: 300; color: var(--w-35); }
+.agent-data-list { margin: 0; display: grid; gap: 0; }
+.agent-data-list > div {
+  display: grid;
+  grid-template-columns: minmax(120px, 34%) 1fr;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--w-06);
+  font-size: 13px;
+}
+.agent-data-list dt { color: var(--w-50); }
+.agent-data-list dd { margin: 0; color: var(--w-80); }
+.agent-data-raw {
+  margin: 12px 0 0;
+  padding: 10px;
+  max-height: 240px;
+  overflow: auto;
+  border-radius: 10px;
+  background: var(--w-03);
+  font-size: 11.5px;
+  color: var(--w-50);
+  white-space: pre-wrap;
+}
+.agent-messages[data-density='compact'] { gap: 12px; font-size: 13px; }
+.agent-messages[data-density='compact'] .agent-data-table td { padding: 4px 8px; }
+@media (max-width: 640px) {
+  .agent-data-list > div { grid-template-columns: 1fr; gap: 2px; }
+  .agent-view-panel { width: min(280px, calc(100vw - 32px)); }
+}
+
+/* ============================================================
+   Segmented navigation — a few sibling pages (settings tabs)
+   ============================================================ */
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--w-10);
+  background: var(--w-03);
+}
+.segmented-item {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 13.5px;
+  color: var(--w-60);
+  text-decoration: none;
+  transition: background 0.18s var(--ease), color 0.18s var(--ease);
+}
+.segmented-item:hover {
+  color: var(--w-95);
+}
+.segmented-item-active {
+  background: var(--w-10);
+  color: var(--fg);
+}
+
+/* ============================================================
+   Marketing — the public pages (DECISIONS D-07)
+   Carried over from the Milyonus marketing site: Inter Tight upright over
+   Instrument Serif italic, glass on pure black, brand blue as the one
+   accent. Every value here is a token above or a step of the same scales.
+   ============================================================ */
+
+.mk {
+  font-family: var(--font-inter-tight), 'Inter Tight', system-ui, -apple-system, sans-serif;
+  background: var(--ink);
+  color: var(--fg);
+  overflow-x: hidden;
+}
+.mk-serif {
+  font-family: var(--font-instrument-serif), 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+}
+.mk-skip {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--fg);
+  color: var(--ink);
+}
+.mk-skip:focus {
+  left: 16px;
+}
+
+/* --- Navigation --- */
+.mk-nav {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  padding: 16px clamp(20px, 3vw, 32px);
+  border-bottom: 1px solid transparent;
+  transition: background 320ms ease, backdrop-filter 320ms ease, border-color 320ms ease;
+}
+.mk-nav[data-scrolled='true'] {
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom-color: var(--w-06);
+}
+.mk-nav-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 48px;
+}
+.mk-nav-links {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--w-10);
+  background: rgba(20, 22, 28, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.mk-nav-link {
+  font-size: 14px;
+  color: var(--w-80);
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  transition: background 160ms ease;
+}
+.mk-nav-link:hover {
+  background: var(--w-10);
+}
+.mk-nav-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mk-nav-signin {
+  display: none;
+  font-size: 14px;
+  color: var(--w-80);
+  padding: 9px 14px;
+  text-decoration: none;
+}
+.mk-nav-signin:hover {
+  color: var(--fg);
+}
+.mk-menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--w-14);
+  background: rgba(20, 22, 28, 0.72);
+  color: var(--fg);
+  cursor: pointer;
+}
+.mk-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  padding: 24px 28px;
+  background: rgba(0, 0, 0, 0.94);
+  display: flex;
+  flex-direction: column;
+  animation: agent-fade 0.25s var(--ease);
+}
+.mk-menu-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 40px;
+}
+.mk-menu-link {
+  font-size: 28px;
+  color: var(--w-95);
+  text-decoration: none;
+  padding: 8px 0;
+}
+@media (min-width: 1024px) {
+  .mk-nav-links {
+    display: flex;
+  }
+  .mk-menu-button {
+    display: none;
+  }
+  .mk-nav-signin {
+    display: inline-flex;
+  }
+}
+
+/* --- Brand lockup: the mark and the name --- */
+.mk-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--fg);
+  text-decoration: none;
+}
+.mk-lockup-name {
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.mk-lockup-by {
+  font-size: 11px;
+  color: var(--w-50);
+  letter-spacing: 0.02em;
+}
+
+/* --- Calls to action --- */
+.mk-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: var(--radius-pill);
+  background: var(--fg);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid var(--fg);
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+.mk-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px rgba(46, 107, 255, 0.35);
+}
+.mk-cta-lg {
+  padding: 15px 28px;
+  font-size: 15px;
+}
+.mk-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 15px 26px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--w-14);
+  background: var(--w-06);
+  color: var(--w-95);
+  font-size: 15px;
+  text-decoration: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.18s var(--ease);
+}
+.mk-ghost:hover {
+  background: var(--w-10);
+}
+
+/* --- Hero --- */
+.mk-hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 150px 24px 72px;
+  text-align: center;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(46, 107, 255, 0.28) 0%, rgba(0, 0, 0, 0) 70%),
+    radial-gradient(40% 40% at 85% 30%, rgba(92, 200, 255, 0.12) 0%, rgba(0, 0, 0, 0) 70%),
+    radial-gradient(45% 45% at 10% 70%, rgba(23, 70, 200, 0.18) 0%, rgba(0, 0, 0, 0) 70%),
+    var(--ink);
+}
+.mk-hero::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 30%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), var(--ink));
+  pointer-events: none;
+}
+.mk-hero > * {
+  position: relative;
+  z-index: 1;
+}
+.mk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--w-95);
+  padding: 9px 20px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--w-14);
+  background: var(--w-08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: agent-rise 0.7s var(--ease) both;
+}
+.mk-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-pill);
+  background: var(--pass);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+}
+.mk-h1 {
+  margin: 36px 0 0;
+  font-size: clamp(46px, 8.6vw, 108px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+  animation: agent-rise 0.9s var(--ease) both;
+}
+.mk-h1 > span {
+  display: block;
+}
+.mk-gradient {
+  background: linear-gradient(180deg, var(--fg) 25%, var(--mk-accent-fade) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-bottom: 0.08em;
+}
+.mk-kicker {
+  margin-top: 26px;
+  max-width: 640px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--w-65);
+  animation: agent-rise 0.9s var(--ease) 0.12s both;
+}
+.mk-kicker p {
+  margin: 0;
+}
+.mk-hero-actions {
+  margin-top: 34px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  animation: agent-rise 0.9s var(--ease) 0.2s both;
+}
+.mk-chips {
+  margin-top: 56px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  max-width: 900px;
+  animation: agent-fade 1.2s var(--ease) 0.35s both;
+}
+.mk-chip {
+  font-size: 13px;
+  color: var(--w-70);
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--w-10);
+  background: var(--w-03);
+}
+
+/* --- Sections --- */
+.mk-section {
+  padding: var(--section-pad);
+}
+.mk-inner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+.mk-head {
+  max-width: 760px;
+  margin-bottom: clamp(36px, 5vw, 56px);
+}
+.mk-head-center {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.mk-eyebrow {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--w-50);
+  margin: 0 0 18px;
+}
+.mk-h2 {
+  margin: 0;
+  font-size: clamp(38px, 5.4vw, 72px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+}
+.mk-h2 > span {
+  display: block;
+}
+.mk-h2 .mk-serif {
+  line-height: 1.08;
+  color: var(--w-65);
+}
+.mk-lead {
+  margin: 22px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--w-60);
+  max-width: 620px;
+}
+.mk-head-center .mk-lead {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* --- Steps --- */
+.mk-steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 900px) {
+  .mk-steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.mk-card {
+  position: relative;
+  padding: 30px 28px 32px;
+  border-radius: 24px;
+  border: 1px solid var(--w-10);
+  background: linear-gradient(180deg, var(--w-06) 0%, var(--w-03) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.mk-step-number {
+  font-size: 13px;
+  color: var(--brand-cyan);
+  letter-spacing: 1px;
+}
+.mk-card-title {
+  margin: 18px 0 10px;
+  font-size: 26px;
+  line-height: 1.15;
+}
+.mk-card-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--w-60);
+}
+
+/* --- Capability grid: one-pixel seams between cells --- */
+.mk-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--w-08);
+  background: var(--w-08);
+}
+@media (min-width: 640px) {
+  .mk-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .mk-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.mk-cell {
+  padding: 30px 28px;
+  background: var(--ink);
+  transition: background 0.2s var(--ease);
+}
+.mk-cell:hover {
+  background: rgba(46, 107, 255, 0.05);
+}
+.mk-cell-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(46, 107, 255, 0.28);
+  background: rgba(46, 107, 255, 0.12);
+  color: var(--brand-cyan);
+}
+.mk-cell-title {
+  margin: 20px 0 8px;
+  font-size: 17px;
+  font-weight: 500;
+}
+.mk-cell-text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--w-60);
+}
+
+/* --- Trust --- */
+.mk-trust {
+  position: relative;
+  background:
+    radial-gradient(50% 60% at 0% 50%, rgba(46, 107, 255, 0.14) 0%, rgba(0, 0, 0, 0) 70%),
+    var(--ink);
+}
+.mk-trust-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(32px, 5vw, 64px);
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .mk-trust-layout {
+    grid-template-columns: 5fr 7fr;
+  }
+}
+.mk-points {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 640px) {
+  .mk-points {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.mk-point {
+  display: flex;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--w-08);
+  background: var(--w-03);
+}
+.mk-point-icon {
+  flex: none;
+  color: var(--brand-cyan);
+  margin-top: 2px;
+}
+.mk-point-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.mk-point-text {
+  display: block;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--w-60);
+}
+
+/* --- Pricing --- */
+.mk-plans {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 900px) {
+  .mk-plans {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.mk-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 30px 28px;
+  border-radius: 24px;
+  border: 1px solid var(--w-10);
+  background: var(--w-03);
+}
+.mk-plan[data-featured='true'] {
+  border-color: rgba(46, 107, 255, 0.55);
+  background:
+    radial-gradient(80% 60% at 50% 0%, rgba(46, 107, 255, 0.16) 0%, rgba(0, 0, 0, 0) 70%),
+    var(--w-03);
+}
+.mk-plan-name {
+  margin: 0;
+  font-size: 30px;
+}
+.mk-plan-blurb {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--w-60);
+}
+.mk-plan-price {
+  font-size: 14px;
+  color: var(--w-80);
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px dashed var(--w-14);
+}
+.mk-plan-features {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--w-80);
+}
+.mk-plan-features li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.mk-plan-features svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--pass);
+}
+.mk-plan .mk-cta,
+.mk-plan .mk-ghost {
+  justify-content: center;
+  margin-top: auto;
+}
+.mk-note {
+  margin: 24px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--w-50);
+}
+
+/* --- FAQ: native disclosure, so keyboard and screen readers just work --- */
+.mk-faq {
+  max-width: 1100px;
+  margin: 0 auto;
+  border-top: 1px solid var(--w-10);
+}
+.mk-faq details {
+  border-bottom: 1px solid var(--w-10);
+}
+.mk-faq summary {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 4px;
+  font-size: 17px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.mk-faq summary::-webkit-details-marker {
+  display: none;
+}
+.mk-faq summary svg {
+  flex: none;
+  color: var(--w-50);
+  transition: transform 0.25s var(--ease);
+}
+.mk-faq details[open] summary svg {
+  transform: rotate(45deg);
+}
+.mk-faq-answer {
+  margin: 0;
+  padding: 0 4px 26px;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--w-60);
+  max-width: 820px;
+}
+
+/* --- Closing --- */
+.mk-closing {
+  text-align: center;
+  padding: clamp(80px, 10vw, 140px) clamp(20px, 4vw, 48px);
+  background:
+    radial-gradient(50% 70% at 50% 100%, rgba(46, 107, 255, 0.22) 0%, rgba(0, 0, 0, 0) 70%),
+    var(--ink);
+}
+.mk-closing .mk-h2 {
+  font-size: clamp(34px, 5vw, 64px);
+  line-height: 1.05;
+}
+.mk-closing .mk-hero-actions {
+  animation: none;
+}
+
+/* --- Footer --- */
+.mk-footer {
+  padding: clamp(56px, 7vw, 88px) clamp(20px, 4vw, 48px) 32px;
+  border-top: 1px solid var(--w-08);
+}
+.mk-footer-top {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(40px, 5vw, 72px);
+}
+@media (min-width: 900px) {
+  .mk-footer-top {
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+  }
+}
+.mk-footer-tagline {
+  margin: 16px 0 0;
+  max-width: 340px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--w-50);
+}
+.mk-footer-heading {
+  margin: 0 0 14px;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(74, 127, 255, 0.7);
+}
+.mk-footer-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mk-footer-links a {
+  font-size: 14px;
+  color: var(--w-65);
+  text-decoration: none;
+}
+.mk-footer-links a:hover {
+  color: var(--fg);
+}
+.mk-footer-wordmark {
+  margin: clamp(48px, 7vw, 88px) 0 0;
+  font-size: clamp(52px, 11vw, 150px);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--w-06);
+  user-select: none;
+}
+.mk-footer-bottom {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12.5px;
+  color: var(--w-35);
+}
+
+/* --- Language choice --- */
+.mk-lang {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--w-10);
+}
+.mk-lang a {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  color: var(--w-60);
+  text-decoration: none;
+}
+.mk-lang a[aria-current='true'] {
+  background: var(--w-10);
+  color: var(--fg);
+}
+
+/* --- Legal pages --- */
+.mk-legal {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 150px clamp(20px, 4vw, 48px) clamp(64px, 8vw, 96px);
+}
+.mk-legal h1 {
+  margin: 0;
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 1;
+  font-weight: 400;
+}
+.mk-legal-draft {
+  margin: 24px 0 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 165, 36, 0.35);
+  background: rgba(245, 165, 36, 0.08);
+  font-size: 13.5px;
+  color: var(--w-80);
+}
+.mk-legal h2 {
+  margin: 40px 0 10px;
+  font-size: 20px;
+  font-weight: 500;
+}
+.mk-legal p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--w-65);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-badge,
+  .mk-h1,
+  .mk-kicker,
+  .mk-hero-actions,
+  .mk-chips,
+  .mk-menu {
+    animation: none;
+  }
+}

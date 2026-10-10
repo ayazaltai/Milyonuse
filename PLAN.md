@@ -73,7 +73,7 @@ Her faz **kendi başına yayınlanabilir** bir artış üretir. Her fazın şart
 
 | Faz | Ad | Çıktı | Şartname |
 |---|---|---|---|
-| **F0** | Temel | Monorepo; RLS'li temiz DB zinciri; kayıt, e-posta doğrulama, giriş, çıkış, şifre sıfırlama; uygulama kabuğu; landing (en/tr); yasal sayfalar; CI; Vercel yapılandırması | [F0](docs/phases/F0-foundation.md) |
+| **F0** ✅ | Temel | Monorepo; RLS'li temiz DB zinciri; kayıt, e-posta doğrulama, giriş, çıkış, şifre sıfırlama; uygulama kabuğu; landing (en/tr); yasal sayfalar; CI; Vercel yapılandırması | [F0](docs/phases/F0-foundation.md) |
 | **F1** | Agent Çekirdeği | `/agent` konsolu (App-Milyonus'tan genelleştirilmiş); OpenRouter model portu; turn loop; SSE; context ve özet; konuşmalar; ekler; `present` kartları | [F1](docs/phases/F1-agent-core.md) |
 | **F2** | Doğrulanmış Hafıza (Poison) ★ | `packages/memory`; T0–T4 güven katmanları; taint izleme; ledger; decay; revoke; pgvector ile hatırlama; Memory Inspector; PoisonBench | [F2](docs/phases/F2-verified-memory.md) |
 | **F3** | Araçlar, Güvenlik, Eylemler | RiskEngine ile Proposal'ın birleşimi; web, araştırma, tarayıcı, sandbox, dosya araçları; MCP client; Bağlantılar | [F3](docs/phases/F3-tools-security.md) |

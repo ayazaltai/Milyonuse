@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "_comment": "Root alias so editors and tooling that probe the repo root find the shared options. The definition lives in packages/config/typescript/base.json.",
+  "extends": "./packages/config/typescript/base.json"
+}

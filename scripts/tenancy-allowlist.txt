@@ -1,0 +1,12 @@
+# Tables intentionally NOT scoped to a single tenant.
+# Every entry needs a reason. Adding a line here is a deliberate act — the guard
+# exists so that "I forgot organization_id" can never look like "it's global".
+#
+# format: <table_name>  # reason
+
+schema_migrations   # migration bookkeeping, created by db/src/migrate.ts
+user_credentials    # a person's password digest (0002) — one password across every organization; platform role only
+account_tokens      # one-time links an account mail carries (0002), before any tenant exists; platform role only
+rate_limit_windows  # request counters keyed by a digest (0005), counted before any tenant is known; platform role only
+system_log          # the team's operational record across tenants (0005); platform role only, masked before written
+worker_heartbeats   # when each scheduled pass last finished (0005); the deployment's own fact
