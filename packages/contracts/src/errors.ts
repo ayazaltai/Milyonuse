@@ -33,6 +33,14 @@ export const ErrorCode = {
   CONFLICT: 'conflict',
   IDEMPOTENCY_KEY_REUSED: 'idempotency_key_reused',
 
+  // --- agent
+  /** No model provider is configured on this deployment. */
+  AGENT_NOT_CONFIGURED: 'agent_not_configured',
+  /** The model provider failed or timed out; nothing was charged for the turn. */
+  AGENT_MODEL_FAILED: 'agent_model_failed',
+  /** A daily or per-turn token ceiling is spent. */
+  AGENT_BUDGET_EXHAUSTED: 'agent_budget_exhausted',
+
   // --- flow control
   RATE_LIMITED: 'rate_limited',
   INTERNAL_ERROR: 'internal_error',
@@ -75,6 +83,10 @@ export const errorStatus: Record<ErrorCode, number> = {
   [ErrorCode.NOT_FOUND]: 404,
   [ErrorCode.CONFLICT]: 409,
   [ErrorCode.IDEMPOTENCY_KEY_REUSED]: 409,
+
+  [ErrorCode.AGENT_NOT_CONFIGURED]: 503,
+  [ErrorCode.AGENT_MODEL_FAILED]: 502,
+  [ErrorCode.AGENT_BUDGET_EXHAUSTED]: 429,
 
   [ErrorCode.RATE_LIMITED]: 429,
   [ErrorCode.INTERNAL_ERROR]: 500,

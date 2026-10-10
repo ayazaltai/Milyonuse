@@ -61,6 +61,27 @@ const BY_HINT: Record<string, { code: ErrorCode; message: string }> = {
     code: ErrorCode.CONFLICT,
     message: 'A system log line cannot be changed.',
   },
+  // 0006 agent core
+  agent_revision_invalid: {
+    code: ErrorCode.CONFLICT,
+    message: 'Only your own message in the same conversation can be revised.',
+  },
+  agent_message_immutable: {
+    code: ErrorCode.CONFLICT,
+    message: 'A message cannot be changed once it is written.',
+  },
+  agent_summary_boundary: {
+    code: ErrorCode.CONFLICT,
+    message: 'The conversation changed while it was being summarised. Try again.',
+  },
+  agent_feedback_invalid: {
+    code: ErrorCode.VALIDATION_FAILED,
+    message: 'Feedback can only be given on an answer from the agent.',
+  },
+  usage_only_grows: {
+    code: ErrorCode.CONFLICT,
+    message: 'Recorded usage cannot be reduced.',
+  },
 };
 
 const BY_CONSTRAINT: Record<string, { code: ErrorCode; message: string }> = {

@@ -19,16 +19,23 @@ export const PLATFORM_URL =
 export const OWNER_URL =
   process.env['DATABASE_URL_MIGRATOR'] ?? 'postgres://milyonuse:milyonuse@127.0.0.1:5432/milyonuse';
 
-/** Runs `fn` on a connection scoped to one tenant, the way the API does. */
+/** A tenant, or one person inside it — what `TenantScope.run` takes in the API. */
+export type TestScope = string | { organizationId: string; memberId: string };
+
+/** Runs `fn` on a connection scoped to one tenant (and person), the way the API does. */
 export async function asTenant<T>(
   pool: pg.Pool,
-  organizationId: string,
+  scope: TestScope,
   fn: (client: pg.PoolClient) => Promise<T>,
 ): Promise<T> {
+  const { organizationId, memberId } = typeof scope === 'string' ? { organizationId: scope, memberId: '' } : scope;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    await client.query("SELECT set_config('app.organization_id', $1, true)", [organizationId]);
+    await client.query(
+      "SELECT set_config('app.organization_id', $1, true), set_config('app.member_id', $2, true)",
+      [organizationId, memberId],
+    );
     const result = await fn(client);
     await client.query('COMMIT');
     return result;
