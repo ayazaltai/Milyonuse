@@ -2,7 +2,7 @@
 
 **Amaç:** Kullanıcı kendi uzman agent'larını kurar (ör. "Araştırmacı Ada", "Satış Asistanı Kaan"). Agent'lar deneyimden **skill** öğrenir; ama bir skill ancak tekrar oynatılıp kanıtlandıktan sonra aktif olur.
 
-**Bağımlılık:** F3 · **Kaynak:** Agent 5.5 `skills/*`, `_bundled_skills/`
+**Bağımlılık:** F3 · **Kaynak:** Agent 5.5 `skills/*`, `_bundled_skills/` · **Durum:** ✅ tamamlandı — [teslim raporu](../delivered/F4-delivered.md) (şartnameden sapmalar §7'de)
 
 ---
 

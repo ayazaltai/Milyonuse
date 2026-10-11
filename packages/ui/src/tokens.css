@@ -3679,3 +3679,109 @@ body {
 .app-card-text { margin: 0; font-size: 13px; line-height: 1.55; color: var(--w-60); flex: 1; }
 .app-card-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .app-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ─────────────────────────────────────────────── studio and skills (F4) */
+.studio-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--w-10);
+  background: var(--w-06);
+  font-size: 19px;
+  line-height: 1;
+}
+.studio-card-head { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.studio-card-head > div { min-width: 0; }
+.studio-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.studio-editor { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start; }
+.studio-aside { display: grid; gap: 20px; position: sticky; top: 24px; }
+@media (max-width: 1100px) {
+  .studio-editor { grid-template-columns: minmax(0, 1fr); }
+  .studio-aside { position: static; }
+}
+.studio-form { display: grid; gap: 16px; }
+.studio-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 640px) {
+  .studio-row { grid-template-columns: minmax(0, 1fr); }
+}
+.control-area { min-height: 110px; resize: vertical; line-height: 1.55; padding-top: 10px; padding-bottom: 10px; }
+.choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.choice {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--w-10);
+  border-radius: 12px;
+  background: var(--w-03);
+  color: var(--w-80);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
+}
+.choice:hover { border-color: var(--w-20); }
+.choice[aria-pressed='true'] { border-color: var(--brand-500); background: var(--w-06); color: var(--fg); }
+.choice-label { font-size: 13.5px; font-weight: 500; }
+.choice-hint { font-size: 12px; line-height: 1.5; color: var(--w-50); }
+.tool-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px 16px; }
+.tool-risk { font-size: 11.5px; color: var(--w-50); margin-left: 6px; }
+.tool-risk[data-risk='caution'], .tool-risk[data-risk='danger'] { color: var(--review); }
+.version-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.version-list li { display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--w-08); border-radius: 10px; font-size: 13px; }
+.version-list li[data-current] { border-color: var(--brand-500); }
+.version-list .sub { color: var(--w-50); font-size: 12px; }
+.code-block {
+  margin: 0;
+  padding: 14px;
+  max-height: 380px;
+  overflow: auto;
+  border: 1px solid var(--w-08);
+  border-radius: 12px;
+  background: var(--w-03);
+  color: var(--w-80);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.test-chat { display: grid; gap: 12px; }
+.test-chat-log { display: grid; gap: 10px; max-height: 460px; overflow-y: auto; padding-right: 4px; }
+.test-chat-msg { padding: 10px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.55; overflow-wrap: anywhere; }
+.test-chat-msg[data-role='user'] { justify-self: end; max-width: 85%; background: var(--w-08); color: var(--fg); }
+.test-chat-msg[data-role='assistant'] { border: 1px solid var(--w-08); color: var(--w-80); }
+.skill-rows { display: grid; gap: 10px; }
+.skill-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--w-10);
+  border-radius: 14px;
+  background: var(--w-03);
+}
+.skill-row[data-waiting] { border-color: var(--review); }
+.skill-row-name { margin: 0; font-size: 14.5px; font-weight: 500; }
+.skill-row-text { margin: 4px 0 0; font-size: 12.5px; color: var(--w-60); line-height: 1.5; }
+.skill-row-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+@media (max-width: 640px) {
+  .skill-row { grid-template-columns: minmax(0, 1fr); }
+  .skill-row-actions { justify-content: flex-start; }
+}
+.dialog-wide { width: min(860px, calc(100vw - 32px)); }
+.kv { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 6px 14px; font-size: 13px; }
+.kv dt { color: var(--w-50); }
+.kv dd { margin: 0; color: var(--w-80); overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .kv { grid-template-columns: minmax(0, 1fr); }
+}
+.control-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+
+/* ─────────────────────────────────────────────── a checkbox with its sentence */
+.checkline { display: flex; align-items: flex-start; gap: 10px; padding: 4px 0; font-size: 13.5px; color: var(--w-80); line-height: 1.45; cursor: pointer; }
+.check { flex: none; width: 15px; height: 15px; margin: 2px 0 0; accent-color: var(--brand-500); cursor: inherit; }
+.checkline-hint { display: block; margin-top: 2px; font-size: 12px; color: var(--w-50); }

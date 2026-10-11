@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import type { AgentConversationSummary, AgentConversationView, AgentStatus } from '@milyonuse/contracts';
+import type { AgentConversationSummary, AgentConversationView, AgentStatus, StudioAgentView } from '@milyonuse/contracts';
 import { Notice, PageHead } from '@/components/ui/primitives';
 import { requestLocale } from '@/i18n/server';
 import { apiOrNull } from '@/lib/api';
@@ -16,12 +16,13 @@ export async function generateMetadata(): Promise<Metadata> {
  * conversation itself is the client's. The stage greets the reader itself, so
  * there is no page heading above it.
  */
-export default async function AgentPage({ searchParams }: { searchParams: Promise<{ c?: string }> }) {
-  const { c } = await searchParams;
+export default async function AgentPage({ searchParams }: { searchParams: Promise<{ c?: string; agent?: string }> }) {
+  const { c, agent } = await searchParams;
   const { locale, t } = await requestLocale();
-  const [status, conversations] = await Promise.all([
+  const [status, conversations, agents] = await Promise.all([
     apiOrNull<AgentStatus>('/agent'),
     apiOrNull<{ items: AgentConversationSummary[] }>('/agent/conversations'),
+    apiOrNull<{ items: StudioAgentView[] }>('/agents'),
   ]);
 
   if (!status || !conversations) {
@@ -38,5 +39,14 @@ export default async function AgentPage({ searchParams }: { searchParams: Promis
       ? await apiOrNull<AgentConversationView>(`/agent/conversations/${c}`)
       : null;
 
-  return <AgentConsole locale={locale} status={status} conversations={conversations.items} initial={selected} />;
+  return (
+    <AgentConsole
+      locale={locale}
+      status={status}
+      conversations={conversations.items}
+      initial={selected}
+      agents={agents?.items ?? []}
+      preselect={agent ?? null}
+    />
+  );
 }

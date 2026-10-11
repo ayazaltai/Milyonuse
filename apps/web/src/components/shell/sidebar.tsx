@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import {
+  BookOpenCheck,
   Bot,
   BrainCircuit,
   House,
@@ -53,7 +54,8 @@ export function Sidebar({ me, locale }: { me: Me; locale: Locale }) {
     {
       label: n.groupBuild,
       items: [
-        { href: '/app/agents', label: n.agents, Icon: Bot, soon: true },
+        { href: '/app/agents', label: n.agents, Icon: Bot },
+        { href: '/app/skills', label: n.skills, Icon: BookOpenCheck },
         { href: '/app/teams', label: n.teams, Icon: Users, soon: true },
         { href: '/app/memory', label: n.memory, Icon: BrainCircuit },
       ],
@@ -71,8 +73,12 @@ export function Sidebar({ me, locale }: { me: Me; locale: Locale }) {
     },
   ];
 
-  const isActive = (href: string): boolean =>
-    href === '/app' ? pathname === '/app' : pathname.startsWith(href.replace(/\/profile$/, ''));
+  // Whole segments: /app/agent is not active on /app/agents.
+  const isActive = (href: string): boolean => {
+    if (href === '/app') return pathname === '/app';
+    const base = href.replace(/\/profile$/, '');
+    return pathname === base || pathname.startsWith(`${base}/`);
+  };
 
   async function signOut(): Promise<void> {
     setBusy(true);

@@ -63,6 +63,8 @@ export function Composer({
   disabled,
   model,
   onPickModel,
+  agent,
+  onPickAgent,
   mode,
   onPickMode,
   onStop,
@@ -83,6 +85,10 @@ export function Composer({
   disabled: boolean;
   model: string;
   onPickModel: (anchor: HTMLElement) => void;
+  /** The person's agent the conversation is with (Phase 4); its tier decides the model. */
+  agent?: { name: string; avatar: string; tierLabel: string; locked: boolean } | null;
+  /** Offered while no conversation is open and the person has agents. */
+  onPickAgent?: ((anchor: HTMLElement) => void) | undefined;
   mode: AgentMode;
   onPickMode: (anchor: HTMLElement) => void;
   /** While a turn runs, the send button becomes Stop. */
@@ -168,15 +174,27 @@ export function Composer({
         }}
       />
       <div className="agent-composer-row">
+        {(onPickAgent || agent) && (
+          <button
+            type="button"
+            className="agent-pill"
+            disabled={disabled || !onPickAgent || agent?.locked === true}
+            title={agent ? agent.name : a.plainAgentHint}
+            onClick={(e) => onPickAgent?.(e.currentTarget)}
+          >
+            <span className="agent-pill-label">{a.with}</span>
+            <span className="agent-pill-value">{agent ? `${agent.avatar} ${agent.name}` : a.plainAgent}</span>
+          </button>
+        )}
         <button
           type="button"
           className="agent-pill"
-          disabled={disabled || status.modelOptions.length < 2}
-          title={option ? `${option.description} — ${option.id}` : model}
+          disabled={disabled || status.modelOptions.length < 2 || Boolean(agent)}
+          title={agent ? a.agentModel : option ? `${option.description} — ${option.id}` : model}
           onClick={(e) => onPickModel(e.currentTarget)}
         >
           <span className="agent-pill-label">{a.model}</span>
-          <span className="agent-pill-value">{modelLabel}</span>
+          <span className="agent-pill-value">{agent ? agent.tierLabel : modelLabel}</span>
         </button>
         <button
           type="button"

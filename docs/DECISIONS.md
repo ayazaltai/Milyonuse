@@ -150,3 +150,15 @@ Biçim: **Karar · Gerekçe · Sonuç · Durum**
   - Bağlantı sırları AES-256-GCM ile, bağlantı kimliği AAD olarak şifrelenir. Bağlantıyı kesmek sırları veritabanı tetikleyicisiyle siler.
   - `SANDBOX_PROVIDER=local` yalnızca geliştirme içindir; üretimde env reddeder.
 - **Durum:** Kabul (F3, 2026-10-11).
+
+### D-20 — Stüdyo ve becerilerin uygulama kararları (F4)
+- **Karar:**
+  - Bir agent sürümü ürünün izin verdiğini yalnızca daraltır, asla genişletmez: kurulumun token tavanı, RiskEngine ve prompt kuralları her agent'ın üstündedir. Profil kuralların altına yazılır, önbelleğe alınan önekin içindedir.
+  - Çekirdek araçlar (ekleri okuma, hafıza, saat, `present`, beceriler) her agent'ta vardır. Bağlı bir uygulamaya izin araç adıyla değil `connection:<sağlayıcı>` ile verilir.
+  - Agent kapsamlı hafıza: agent işinden öğrendiğini kendine yazar; kişinin kendi hakkında söyledikleri her zaman kişinindir. Okumada kişinin hafızası ile agent'ınki birlikte görünür.
+  - Beceri talimattır; tarayıcı "imperative" sinyalini saymaz. `danger` kesin redddir; `caution` yalnızca kişinin ısrarıyla kalır ve hiçbir politika onu kendi başına onaylayamaz.
+  - Tekrar oynatma iz bırakmayan, yalnızca okuyan bir turdur. Kurallar değerlendirir; model bağlıysa ikinci kez okur ve kurallar geçse bile düşürebilir.
+  - Güvenilir (`trusted`) agent'ın politikası, yalnızca tekrar oynatmayı geçmiş `clean` bir beceriyi onaylayabilir.
+  - Katalog kod içindedir (`packages/skills`). Agent 5.5'in 41 becerisinden terminal, sunucu ve bulut varsayanlar elendi.
+- **Durum:** Kabul (F4, 2026-10-11).
+

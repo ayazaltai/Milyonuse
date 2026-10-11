@@ -14,6 +14,7 @@ import {
   type AgentSearchHit,
   type AgentStatus,
   type AgentStreamEvent,
+  type StudioAgentView,
   type AgentTurn,
   type Locale,
   agentSupersededIds,
@@ -76,11 +77,17 @@ export function AgentConsole({
   status,
   conversations: initialConversations,
   initial,
+  agents = [],
+  preselect = null,
 }: {
   locale: Locale;
   status: AgentStatus;
   conversations: AgentConversationSummary[];
   initial: AgentConversationView | null;
+  /** The person's agents (Phase 4), for the picker and for naming the one a conversation is with. */
+  agents?: StudioAgentView[];
+  /** An agent to start with — the studio's "Talk to it". */
+  preselect?: string | null;
 }) {
   const t = getDictionary(locale);
   const a = t.app.agent;
@@ -89,6 +96,10 @@ export function AgentConsole({
   const [conversations, setConversations] = useState(initialConversations);
   const [current, setCurrent] = useState<AgentConversationView | null>(initial);
   const [model, setModel] = useState(initial?.conversation.model ?? status.defaultModel);
+  /** The agent a new conversation will be with; an open one's is its own. */
+  const [agentId, setAgentId] = useState<string | null>(
+    initial ? initial.conversation.agentId : preselect && agents.some((x) => x.id === preselect) ? preselect : null,
+  );
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState<AgentAttachmentView[]>([]);
   const [waiting, setWaiting] = useState<string | null>(null);
@@ -240,8 +251,10 @@ export function AgentConsole({
     setPending([]);
     setAlert(null);
     setDialog(null);
-    if (next) setModel(next.conversation.model);
-    else setDraft('');
+    if (next) {
+      setModel(next.conversation.model);
+      setAgentId(next.conversation.agentId);
+    } else setDraft('');
     if (narrow()) setRail('closed');
     // The address follows the conversation, so a reload opens the same one.
     window.history.replaceState(null, '', next ? `${PATH}?c=${next.conversation.id}` : PATH);
@@ -301,7 +314,7 @@ export function AgentConsole({
     const result = await request<AgentConversationSummary>('/agent/conversations', {
       method: 'POST',
       headers: { 'idempotency-key': key() },
-      body: JSON.stringify({ model }),
+      body: JSON.stringify(agentId ? { model, agentId } : { model }),
     });
     if (!result.ok) {
       setAlert(explain(result.error));
@@ -581,6 +594,22 @@ export function AgentConsole({
     });
   }
 
+  function agentMenu(anchor: HTMLElement): void {
+    setMenu({
+      anchor: anchor.getBoundingClientRect(),
+      entries: [
+        { heading: a.withHeading },
+        { label: a.plainAgent, description: a.plainAgentHint, checked: agentId === null, onSelect: () => setAgentId(null) },
+        ...agents.map((x) => ({
+          label: `${x.avatar} ${x.name}`,
+          description: x.roleTitle || t.app.studio.tiers[x.current.modelTier],
+          checked: x.id === agentId,
+          onSelect: () => setAgentId(x.id),
+        })),
+      ],
+    });
+  }
+
   function modeMenu(anchor: HTMLElement): void {
     setMenu({
       anchor: anchor.getBoundingClientRect(),
@@ -635,6 +664,9 @@ export function AgentConsole({
   const first = status.reader.name.trim().split(/\s+/)[0];
   const greeting = first ? a.greetingName(part, first) : part;
 
+  // An archived or unknown agent is not named; the conversation still is what it is.
+  const chosenAgent = agentId ? (agents.find((x) => x.id === agentId) ?? null) : null;
+
   const composer = (
     <Composer
       locale={locale}
@@ -651,6 +683,12 @@ export function AgentConsole({
       disabled={disabled}
       model={model}
       onPickModel={modelMenu}
+      agent={
+        chosenAgent
+          ? { name: chosenAgent.name, avatar: chosenAgent.avatar, tierLabel: t.app.studio.tiers[chosenAgent.current.modelTier], locked: current !== null }
+          : null
+      }
+      onPickAgent={current === null && agents.length > 0 ? agentMenu : undefined}
       mode={mode}
       onPickMode={modeMenu}
       onStop={() => void stop()}
