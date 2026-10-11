@@ -123,6 +123,51 @@ const BY_HINT: Record<string, { code: ErrorCode; message: string }> = {
     code: ErrorCode.PERMISSION_DENIED,
     message: 'The memory ledger cannot be changed.',
   },
+  // 0009 actions and connections
+  connection_identity_fixed: {
+    code: ErrorCode.CONFLICT,
+    message: 'What a connection connects to does not change; connect again instead.',
+  },
+  connection_revoked: {
+    code: ErrorCode.CONFLICT,
+    message: 'That connection was disconnected. Connect it again to use it.',
+  },
+  oauth_state_used: {
+    code: ErrorCode.CONFLICT,
+    message: 'This authorization was already used. Start connecting again.',
+  },
+  oauth_state_expired: {
+    code: ErrorCode.CONFLICT,
+    message: 'This authorization took too long and expired. Start connecting again.',
+  },
+  agent_action_transition: {
+    code: ErrorCode.CONFLICT,
+    message: 'That proposal cannot move to that state.',
+  },
+  agent_action_immutable: {
+    code: ErrorCode.CONFLICT,
+    message: 'What a proposal proposes does not change once it is made.',
+  },
+  agent_action_expired: {
+    code: ErrorCode.CONFLICT,
+    message: 'This proposal expired. Ask the agent again.',
+  },
+  agent_action_needs_person: {
+    code: ErrorCode.PERMISSION_DENIED,
+    message: 'An irreversible action always needs a person to confirm it.',
+  },
+  agent_action_undo_invalid: {
+    code: ErrorCode.CONFLICT,
+    message: 'Only a completed action of your own can be undone.',
+  },
+  agent_action_item_once: {
+    code: ErrorCode.CONFLICT,
+    message: 'Each part of an action runs at most once.',
+  },
+  sandbox_session_finished: {
+    code: ErrorCode.CONFLICT,
+    message: 'A finished sandbox run is a record and does not change.',
+  },
 };
 
 const BY_CONSTRAINT: Record<string, { code: ErrorCode; message: string }> = {
