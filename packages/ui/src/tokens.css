@@ -1343,13 +1343,10 @@ body {
 }
 
 /* ============================================================
-   Milyonus Agent — /agent (App-Milyonus New-Agent-Page §3)
-   A conversation and the proposals it makes. No colour of its own: the
-   person's words sit on brand blue, the agent's on the white scale, and a
-   proposal is a card like every other surface.
+   The agent — /app/agent (F1; ported from App-Milyonus).
+   A conversation and the cards it lays out. No colour of its own: the
+   person's words sit on brand blue, the agent's on the white scale.
    ============================================================ */
-
-
 
 .agent-text p {
   margin: 0;
@@ -1369,7 +1366,7 @@ body {
   font-weight: 600;
   color: var(--fg);
 }
-/* A name or an id the agent quotes. Montserrat, spaced — no monospace (§4.4). */
+/* A name or an id the agent quotes. Spaced, on a light ground. */
 .agent-code {
   letter-spacing: 0.04em;
   background: var(--w-08);
@@ -1377,127 +1374,8 @@ body {
   border-radius: 5px;
 }
 
-.agent-card {
-  align-self: stretch;
-  padding: 18px 20px;
-  border-radius: var(--radius-card);
-  border: 1px solid var(--w-14);
-  background: var(--w-06);
-}
-.agent-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.agent-card-title {
-  margin: 10px 0 4px;
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-}
-.agent-card-summary {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--w-50);
-}
-.agent-card-table {
-  margin-top: 14px;
-  max-height: 360px;
-  overflow: auto;
-  border: 1px solid var(--w-08);
-  border-radius: var(--radius-control);
-}
-.agent-card-more {
-  margin: 0;
-  padding: 8px 12px;
-  font-size: 12px;
-  color: var(--w-35);
-}
-.agent-card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 14px;
-}
-.agent-card-note {
-  margin-left: auto;
-  font-size: 12px;
-  color: var(--w-35);
-}
-/* A second person's approval on a proposal card (App-Milyonus D-58): waiting in amber, the decision in its colour. */
-.agent-card-approval {
-  margin-top: 12px;
-  padding: 9px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--w-10);
-  background: var(--w-03);
-  font-size: 12.5px;
-  color: var(--w-80);
-}
-.agent-card-approval .agent-card-note {
-  margin-left: 0;
-}
-.agent-card-approval[data-decision='waiting'] {
-  border-color: var(--review);
-  color: var(--w-80);
-}
-.agent-card-approval[data-decision='approved'] strong {
-  color: var(--pass);
-  font-weight: 500;
-}
-.agent-card-approval[data-decision='declined'] strong {
-  color: var(--danger);
-  font-weight: 500;
-}
-.agent-card-result {
-  margin-top: 14px;
-  font-size: 13px;
-  color: var(--w-65);
-}
-.agent-card-result p {
-  margin: 0;
-}
-.agent-card-failures {
-  margin: 10px 0 0;
-  padding-left: 18px;
-  font-size: 12.5px;
-  color: var(--w-60);
-}
-.agent-card-failures li + li {
-  margin-top: 3px;
-}
-.agent-card-links {
-  list-style: none;
-  margin: 10px 0 0;
-  padding: 0;
-}
-.agent-card-links li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 6px 0;
-  border-top: 1px solid var(--w-06);
-  font-size: 12.5px;
-  color: var(--w-65);
-}
-.agent-progress {
-  margin-top: 14px;
-}
-.agent-progress-label {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-  font-size: 12.5px;
-  color: var(--w-60);
-}
-
 /* ============================================================
-   Milyonus Agent — the workspace (App-Milyonus Agent-UI-Plan §4)
+   The agent's workspace
    A quiet control room: a thread rail on the left, one stage, and a single
    light source — the composer's frame. Flat surfaces told apart by the white
    scale; brand blue only where attention belongs. No icons: the mark, words.
@@ -1725,7 +1603,9 @@ body {
 }
 .agent-rail-usage {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
+  gap: 2px 10px;
   font-size: 11.5px;
   color: var(--w-50);
 }
@@ -1757,6 +1637,12 @@ body {
   gap: 10px;
   min-height: 56px;
   padding: 10px 20px;
+}
+/* Where the shell's menu button floats over the page (≤ 900 px), the bar starts clear of it. */
+@media (max-width: 900px) {
+  .agent-top {
+    padding-left: 68px;
+  }
 }
 .agent-top-title {
   min-width: 0;
@@ -1865,21 +1751,6 @@ body {
   font-style: italic;
   color: var(--w-60);
   animation: agent-rise 0.6s 0.1s var(--ease) both;
-}
-/* A person the product has no name for is asked once, under the greeting (App-Milyonus D-51). */
-.agent-name-ask {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: -14px 0 24px;
-  font-size: 13px;
-  color: var(--w-60);
-  animation: agent-rise 0.6s 0.12s var(--ease) both;
-}
-.agent-name-ask .control {
-  width: min(240px, 100%);
 }
 .agent-hero .agent-composer {
   animation: agent-rise 0.6s 0.15s var(--ease) both;
@@ -2006,7 +1877,7 @@ body {
   gap: 6px;
   margin-top: 10px;
 }
-/* The composer's settings: one quiet line each, label then value (App-Milyonus D-73). */
+/* The composer's settings: one quiet line each, label then value. */
 .agent-pill {
   position: relative;
   display: inline-flex;
@@ -2048,7 +1919,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* The mode says itself at a glance: a point, lit for Auto-accept, hollow for Plan. */
+/* The mode says itself at a glance: a point, lit for Auto, hollow for Plan. */
 .agent-pill[data-mode]::before {
   content: '';
   width: 6px;
@@ -2127,7 +1998,7 @@ body {
   opacity: 1;
   color: var(--w-50);
 }
-/* While a turn runs, Send becomes Stop (App-Milyonus D-52): quiet, never the composer's light. */
+/* While a turn runs, Send becomes Stop: quiet, never the composer's light. */
 .agent-square[data-variant='stop'] {
   background: var(--w-08);
   border-color: var(--w-20);
@@ -2191,17 +2062,6 @@ body {
   font-size: 11.5px;
   color: var(--w-35);
 }
-.agent-readonly {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px dashed var(--w-14);
-  font-size: 13px;
-  color: var(--w-60);
-}
 
 /* ─── the thread ───────────────────────────────────────────── */
 .agent-messages {
@@ -2240,18 +2100,7 @@ body {
 .agent-turn-body > * + * {
   margin-top: 12px;
 }
-.agent-trace {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.agent-trace span {
-  padding: 3px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--w-06);
-  font-size: 11.5px;
-  color: var(--w-50);
-}
+
 .agent-thinking {
   display: flex;
   align-items: center;
@@ -2280,11 +2129,11 @@ body {
   animation: agent-fade 0.4s var(--ease) both;
 }
 .agent-written {
-  color: var(--w-90);
+  color: var(--w-95);
   font-size: 14.5px;
   line-height: 1.65;
 }
-/* Found by search (App-Milyonus D-65): the words marked, the message lit briefly once opened. */
+/* Found by search: the words marked, the message lit briefly once opened. */
 .agent-hit mark {
   background: none;
   color: var(--brand-cyan);
@@ -2303,182 +2152,7 @@ body {
   border-radius: 14px;
   transition: outline-color 0.6s var(--ease);
 }
-/* A suggestion from the reader's own day (App-Milyonus D-64). */
-.agent-task[data-today] .agent-task-scale {
-  color: var(--brand-cyan);
-}
-/* What readers said about a message or the conversation (App-Milyonus D-67). */
-.agent-remarks {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 12px;
-  padding-left: 12px;
-  border-left: 2px solid var(--w-10);
-  text-align: left;
-}
-.agent-turn-user .agent-remarks {
-  border-left-color: var(--w-14);
-}
-.agent-remark-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 10px;
-  font-size: 11.5px;
-  color: var(--w-40);
-}
-.agent-remark-who {
-  font-weight: 500;
-  color: var(--w-70);
-}
-.agent-remark-body {
-  margin: 3px 0 0;
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: var(--w-80);
-  white-space: pre-wrap;
-}
-.agent-remark[data-withdrawn] .agent-remark-body {
-  font-style: italic;
-  color: var(--w-40);
-}
-.agent-conversation-remarks {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  padding-top: 14px;
-  border-top: 1px solid var(--w-08);
-}
-.agent-conversation-remarks .agent-remarks {
-  align-self: stretch;
-}
-/* Connected apps — Milyonus over MCP (App-Milyonus MCP D-86). */
-.agent-connections {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-.agent-connections-url {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 6px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--w-10);
-  background: var(--w-03);
-}
-.agent-connections-url code {
-  flex: 1;
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--w-95);
-  overflow-wrap: anywhere;
-}
-.agent-connections-steps {
-  margin: 6px 0 0;
-  padding-left: 18px;
-  display: grid;
-  gap: 5px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--w-70);
-}
-.agent-connections-note {
-  margin: 8px 0 0;
-  font-size: 12.5px;
-  color: var(--w-50);
-}
-.agent-connections-refusal {
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--danger);
-  font-size: 13px;
-  color: var(--w-80);
-}
-/* Scheduled tasks (App-Milyonus D-68). */
-.agent-rail-schedules {
-  display: block;
-  margin-bottom: 12px;
-  font-size: 12.5px;
-  text-align: left;
-}
-.agent-schedules {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.agent-schedule {
-  padding: 12px 14px;
-  border: 1px solid var(--w-08);
-  border-radius: 12px;
-  background: var(--w-03);
-}
-.agent-schedule[data-paused] {
-  opacity: 0.65;
-}
-.agent-schedule-head {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 4px 12px;
-  font-size: 13.5px;
-  color: var(--w-90);
-}
-.agent-schedule-head span {
-  font-size: 12px;
-  color: var(--w-50);
-}
-.agent-schedule-prompt {
-  margin: 6px 0 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--w-70);
-}
-.agent-schedule-meta {
-  margin: 6px 0 0;
-  font-size: 11.5px;
-  color: var(--w-40);
-}
-/* Naming who may read a conversation (App-Milyonus D-67). */
-.agent-people {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: -4px 0 10px 30px;
-}
-.agent-people-list {
-  max-height: 220px;
-  overflow-y: auto;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.agent-people-empty {
-  padding: 8px 2px;
-  font-size: 12.5px;
-  color: var(--w-40);
-}
-.agent-person {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 4px;
-  border-radius: 8px;
-  font-size: 13.5px;
-  color: var(--w-80);
-  cursor: pointer;
-}
-.agent-person:hover {
-  background: var(--w-06);
-}
-/* Under a message: edit, ask again, and whether an answer helped (App-Milyonus D-62, D-63). */
+/* Under a message: edit, ask again, and whether an answer helped. */
 .agent-message-actions {
   display: flex;
   flex-wrap: wrap;
@@ -2526,7 +2200,7 @@ body {
 }
 .agent-link:hover,
 .agent-link:focus-visible {
-  color: var(--w-90);
+  color: var(--w-95);
 }
 .agent-link[data-on] {
   color: var(--brand-cyan);
@@ -2557,7 +2231,7 @@ body {
 .agent-feedback .control {
   flex: 1;
 }
-/* What a later edit superseded: kept, folded (App-Milyonus D-62). */
+/* What a later edit superseded: kept, folded. */
 .agent-earlier {
   border-left: 2px solid var(--w-08);
   padding-left: 14px;
@@ -2565,7 +2239,7 @@ body {
 .agent-earlier > summary {
   cursor: pointer;
   font-size: 12.5px;
-  color: var(--w-40);
+  color: var(--w-35);
   list-style: none;
 }
 .agent-earlier > summary::-webkit-details-marker {
@@ -2581,7 +2255,7 @@ body {
   margin-top: 14px;
   opacity: 0.6;
 }
-/* Where the agent's summary of the conversation ends (App-Milyonus D-76): every message stays above it. */
+/* Where the agent's summary of the conversation ends: every message stays above it. */
 .agent-memory {
   border-top: 1px solid var(--w-08);
   padding-top: 12px;
@@ -2765,44 +2439,7 @@ body {
   gap: 8px;
   margin-top: 24px;
 }
-.agent-choice {
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  gap: 12px;
-  padding: 14px;
-  border-radius: 14px;
-  border: 1px solid var(--w-10);
-  cursor: pointer;
-  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
-}
-.agent-choice:hover {
-  background: var(--w-03);
-}
-.agent-choice:has(input:checked) {
-  border-color: var(--brand-500);
-  background: var(--w-03);
-}
-.agent-choice:has(input:disabled) {
-  opacity: 0.45;
-  cursor: default;
-}
-.agent-choice input {
-  margin: 3px 0 0;
-  accent-color: var(--brand-500);
-}
-.agent-choice strong {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--fg);
-}
-.agent-choice span {
-  display: block;
-  margin-top: 3px;
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: var(--w-50);
-}
+
 .agent-facts {
   display: grid;
   grid-template-columns: 130px minmax(0, 1fr);
@@ -2817,14 +2454,6 @@ body {
   margin: 0;
   color: var(--w-95);
   overflow-wrap: anywhere;
-}
-/* The organization's house instructions, kept as they were written (App-Milyonus D-54). */
-.agent-facts dd.agent-facts-long {
-  white-space: pre-wrap;
-  max-height: 180px;
-  overflow: auto;
-  font-size: 12.5px;
-  color: var(--w-65);
 }
 .agent-toast {
   position: fixed;
@@ -2950,7 +2579,7 @@ body {
   }
 }
 
-/* ── Agent cards (App-Milyonus Agent-Control-Plan §2.5): steps, data, the reader's view ── */
+/* ── the agent's cards: steps, data, the reader's view ── */
 .agent-view { position: relative; }
 .agent-view-panel {
   position: absolute;
@@ -3057,147 +2686,6 @@ body {
 .agent-steps-list li[data-done]::before { background: var(--pass); animation: none; }
 @keyframes agent-pulse { 50% { opacity: 0.35; } }
 
-/* An approver reads the whole card before deciding (App-Milyonus D-58). */
-.agent-approval-body {
-  display: grid;
-  gap: 14px;
-  max-height: min(62vh, 640px);
-  overflow: auto;
-}
-
-/* What the agent has to tell the reader (App-Milyonus D-57): a quiet section of the rail. */
-.agent-notices {
-  margin: 0 0 6px;
-  border-radius: 12px;
-}
-.agent-notices[data-open] {
-  background: var(--w-03);
-  border: 1px solid var(--w-08);
-}
-.agent-notices-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 9px 12px;
-  border: 0;
-  border-radius: 12px;
-  background: none;
-  color: var(--w-60);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-.agent-notices-head:hover {
-  color: var(--fg);
-}
-.agent-notices-count {
-  min-width: 18px;
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: var(--brand-500);
-  color: var(--fg);
-  font-size: 10.5px;
-  font-weight: 600;
-  line-height: 16px;
-  text-align: center;
-}
-.agent-notices-caret {
-  color: var(--w-35);
-}
-.agent-notices-body {
-  padding: 0 6px 8px;
-}
-.agent-notices-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-height: 320px;
-  overflow: auto;
-}
-.agent-notice {
-  display: grid;
-  gap: 2px;
-  width: 100%;
-  padding: 8px 8px 8px 14px;
-  border: 0;
-  border-radius: 8px;
-  background: none;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
-  position: relative;
-}
-.agent-notice:hover {
-  background: var(--w-06);
-}
-.agent-notice[data-unread]::before {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 14px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--brand-500);
-}
-.agent-notice-title {
-  font-size: 12.5px;
-  color: var(--w-80);
-}
-.agent-notice[data-unread] .agent-notice-title {
-  color: var(--fg);
-}
-.agent-notice-body {
-  font-size: 11.5px;
-  color: var(--w-50);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.agent-notice-time {
-  font-size: 11px;
-  color: var(--w-35);
-}
-.agent-notices-empty {
-  margin: 4px 8px 6px;
-  font-size: 12px;
-  color: var(--w-35);
-}
-.agent-notices-foot {
-  display: flex;
-  align-items: center;
-  padding-top: 4px;
-}
-.agent-notices-foot .agent-ghost {
-  font-size: 12px;
-  padding: 5px 8px;
-}
-.agent-prefs {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-}
-.agent-prefs > div {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 170px;
-  align-items: center;
-  gap: 12px;
-}
-.agent-prefs dt {
-  font-size: 13px;
-  color: var(--w-80);
-}
-.agent-prefs dd {
-  margin: 0;
-}
-@media (max-width: 560px) {
-  .agent-prefs > div {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
-}
-
 .agent-pinned { display: grid; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--w-08); }
 .agent-data {
   border: 1px solid var(--w-10);
@@ -3218,7 +2706,7 @@ body {
 }
 .agent-data-title { margin: 0; font-size: 14.5px; font-weight: 500; color: var(--fg); }
 .agent-data-sub { margin: 2px 0 0; font-size: 12.5px; font-style: italic; font-weight: 300; color: var(--w-50); }
-/* Where a card's values came from (App-Milyonus D-46): the platform's own answer, or the agent's writing. */
+/* Where a card's values came from: a read's own answer, or the agent's writing. */
 .agent-data-origin { margin: 4px 0 0; font-size: 11.5px; letter-spacing: 0.01em; color: var(--w-35); }
 .agent-data[data-origin='agent'] { border-style: dashed; }
 .agent-data[data-origin='agent'] .agent-data-origin { font-style: italic; font-weight: 300; color: var(--review); }
@@ -3288,6 +2776,54 @@ body {
 @media (max-width: 640px) {
   .agent-data-list > div { grid-template-columns: 1fr; gap: 2px; }
   .agent-view-panel { width: min(280px, calc(100vw - 32px)); }
+}
+
+/* ── additions for a general-purpose agent: code, headings, quotes, attachment chips ── */
+.agent-text em {
+  font-style: italic;
+}
+.agent-heading {
+  font-weight: 600;
+  color: var(--fg);
+}
+.agent-text blockquote {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--w-14);
+  color: var(--w-65);
+}
+/* Code keeps its columns: the one place a fixed-width face earns its keep. */
+.agent-code-block {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--w-08);
+  background: var(--w-03);
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre;
+}
+.agent-text .agent-data-table-wrap {
+  margin-top: 8px;
+}
+.agent-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+.agent-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--w-14);
+  background: var(--w-03);
+  color: var(--w-65);
+  white-space: nowrap;
 }
 
 /* ============================================================

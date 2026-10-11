@@ -19,6 +19,8 @@ pnpm dev                      # web http://127.0.0.1:3000 · api :4000
 ```
 
 Without mail settings, account links are logged and shown on the page in development.
+Without `OPENROUTER_API_KEY`, the agent (`/app/agent`) answers from a rule-based development
+stand-in that says so on every answer; set the key for the real model.
 
 ## Check it
 
@@ -30,7 +32,7 @@ pnpm verify                   # guards → typecheck → lint → test → build
 
 ```
 apps/api        NestJS + Fastify — /api/v1
-apps/web        Next.js — landing (/en, /tr), sign-in, the app (/app)
+apps/web        Next.js — landing (/en, /tr), sign-in, the app (/app, the agent at /app/agent)
 packages/       contracts (zod), ui (design tokens), config
 db/             roles, numbered SQL migrations, integration tests
 scripts/        guards and setup

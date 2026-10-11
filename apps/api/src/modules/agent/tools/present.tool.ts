@@ -79,6 +79,10 @@ export function presentTool(store: AgentStore): AgentTool {
           .describe(
             'Where in that answer: "rows", "items", "sheets.0". Omit for the first list in it (table, list) or the whole answer (stats, detail).',
           ),
+        header: z
+          .boolean()
+          .optional()
+          .describe('table, from lines that are lists of cells (an attached table): true when the first line names the columns.'),
         columns: z
           .array(columnArg)
           .max(12)
@@ -160,12 +164,18 @@ export function presentTool(store: AgentStore): AgentTool {
       if (list && list.list.some((entry) => Array.isArray(entry))) {
         // Lines that are lists of cells — a table's rows: each line as it is, its own columns.
         const width = Math.min(12, Math.max(...list.list.map((e) => (Array.isArray(e) ? e.length : 1))));
-        const lines = list.list
-          .slice(0, CARD_ROWS)
-          .map((entry) => (Array.isArray(entry) ? entry.slice(0, width).map(cell) : [cell(entry)]));
+        const asCells = (entry: unknown) => (Array.isArray(entry) ? entry.slice(0, width).map(cell) : [cell(entry)]);
+        // The first line, when it names the columns, heads the card rather than filling it.
+        const first = args.header ? asCells(list.list[0]) : [];
+        const body = args.header ? list.list.slice(1) : list.list;
+        const lines = body.slice(0, CARD_ROWS).map(asCells);
         const named = (args.columns ?? []).map((c) => (typeof c === 'string' ? c : (c.label ?? c.field)));
-        const headings = Array.from({ length: width }, (_, i) => named[i] ?? `Column ${i + 1}`);
-        const beyond = (shown: number) => (list.total > shown ? { total: list.total } : {});
+        const headings = Array.from({ length: width }, (_, i) => {
+          const own = first[i];
+          return named[i] ?? (own === undefined || own === null ? `Column ${i + 1}` : String(own));
+        });
+        const total = args.header ? list.total - 1 : list.total;
+        const beyond = (shown: number) => (total > shown ? { total } : {});
         if (args.layout === 'list') {
           const items = lines.map((r) => ({ label: String(r[0] ?? ''), value: r.length > 1 ? (r[1] ?? '') : '' }));
           return {

@@ -106,7 +106,7 @@ milyonuse/
 | `system_log` | global | worker heartbeat, uyarılar |
 
 **F1 — Agent çekirdeği** (App-Milyonus 0051, 0055, 0059, 0065 kaynaklı, sadeleştirilmiş)
-`agent_conversations`, `agent_messages` (yalnızca ekleme), `agent_attachments`, `agent_sources` (`src-xxxxxx`), `agent_feedback`, `usage_daily`
+`agent_conversations` (RLS: organization ve member), `agent_messages` (yalnızca ekleme; kaynaklar `src-xxxxxx` araç mesajının içinde tutulur), `agent_attachments`, `agent_feedback`, `usage_daily` — `0006_agent_core`
 
 **F2 — Doğrulanmış hafıza**
 | Tablo | Not |

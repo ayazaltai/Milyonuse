@@ -47,7 +47,7 @@ export function Sidebar({ me, locale }: { me: Me; locale: Locale }) {
     {
       items: [
         { href: '/app', label: n.home, Icon: House },
-        { href: '/app/agent', label: n.agent, Icon: Sparkles, soon: true },
+        { href: '/app/agent', label: n.agent, Icon: Sparkles },
       ],
     },
     {

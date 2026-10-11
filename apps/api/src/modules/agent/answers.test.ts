@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { forModel, forPage, isSourceAnswer, keepSource, newSourceId, SOURCE_ID } from './answers.js';
+import { forModel, forPage, isSourceAnswer, keepAnswer, keepSource, newSourceId, SOURCE_ID, sourcePrefix } from './answers.js';
 import { MODEL_CHARS, fit, omissionLine, omittedOf } from './fit.js';
 import { at, cell, firstList, labelOf } from './tools/present.tool.js';
 
@@ -88,7 +88,7 @@ describe('what the model rereads', () => {
       presented: true,
       title: 'Candidates',
       layout: 'table',
-      origin: 'platform',
+      origin: 'source',
       source: { id: 'src-abc123', from: 'Read the table', at: '2026-10-03T10:00:00.000Z' },
       columns: ['Full name'],
       rows: people(300).map((p) => [p.fullName]),
@@ -126,5 +126,29 @@ describe('laying a source out', () => {
     expect(cell([{ a: 1 }, { a: 2 }])).toBe('2 items');
     expect(labelOf('fullName')).toBe('Full name');
     expect(labelOf('position.created_at')).toBe('Created at');
+  });
+});
+
+describe('keeping an answer', () => {
+  it('finds a source by its handle: the kept text starts with it', () => {
+    const kept = keepSource('src-a1b2c3', 'Read the document', { text: 'Hello' });
+    expect(kept.startsWith(sourcePrefix('src-a1b2c3'))).toBe(true);
+    expect(kept.startsWith(sourcePrefix('src-zzzzzz'))).toBe(false);
+  });
+
+  it('keeps an answer past the stored ceiling as valid JSON that says what it left out', () => {
+    const kept = keepAnswer({ items: people(5000) });
+    expect(kept.length).toBeLessThanOrEqual(190_000);
+    const parsed = JSON.parse(kept) as { items: unknown[] };
+    expect(omittedOf(parsed.items.at(-1))).toMatchObject({ all: 5000 });
+  });
+
+  it('reads an earlier turn’s answer shorter than the turn in progress', () => {
+    const kept = keepSource('src-abc123', 'Read the table', { total: 1240, items: people(1240) });
+    const now = forModel(kept, 'read_table');
+    const earlier = forModel(kept, 'read_table', 4_000);
+    expect(earlier.length).toBeLessThanOrEqual(4_000);
+    expect(earlier.length).toBeLessThan(now.length);
+    expect(JSON.parse(earlier)).toMatchObject({ source: 'src-abc123', result: { total: 1240 } });
   });
 });

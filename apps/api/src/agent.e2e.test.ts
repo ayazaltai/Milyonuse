@@ -606,7 +606,7 @@ describe('attachments', () => {
     const table = await attachText(created.id, 'Cities', 'City,Country\nLisbon,Portugal\nPorto,Portugal\nTokyo,Japan');
     script.push(call('read_table', { tableId: table.id, lines: 10 }), (request) => {
       const answer = JSON.parse(request.messages.at(-1)!.content) as { source: string };
-      return call('present', { title: 'Cities', layout: 'table', source: answer.source, path: 'rows' })(request);
+      return call('present', { title: 'Cities', layout: 'table', source: answer.source, path: 'rows', header: true })(request);
     }, say('Here they are.'));
     const response = await api.request('POST', `/agent/conversations/${created.id}/messages`, {
       cookie: ada,
@@ -624,8 +624,8 @@ describe('attachments', () => {
       source: { from: string };
     };
     expect(card).toMatchObject({ presented: true, origin: 'source', source: { from: 'Table “Cities”' } });
-    expect(card.rows).toEqual([['City', 'Country'], ['Lisbon', 'Portugal'], ['Porto', 'Portugal'], ['Tokyo', 'Japan']]);
-    expect((card as unknown as { columns: string[] }).columns).toEqual(['Column 1', 'Column 2']);
+    expect(card.rows).toEqual([['Lisbon', 'Portugal'], ['Porto', 'Portugal'], ['Tokyo', 'Japan']]);
+    expect((card as unknown as { columns: string[] }).columns).toEqual(['City', 'Country']);
     // The model rereads the card as "shown", not its rows again.
     expect(seen.at(-1)!.messages.at(-1)!.content).toContain('Shown to the person as a card');
   });

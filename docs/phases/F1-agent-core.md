@@ -2,7 +2,7 @@
 
 **Amaç:** Kullanıcı `/agent` sayfasında bir agent'la akışlı (streaming) olarak konuşur. Konuşmalar kalıcıdır, ek dosya yüklenebilir, uzun konuşmalar özetlenir, maliyet ölçülür.
 
-**Bağımlılık:** F0 · **Kaynak:** App-Milyonus `modules/agent/*`, `(dashboard)/agent/*` (bkz. SOURCES A.2)
+**Bağımlılık:** F0 · **Kaynak:** App-Milyonus `modules/agent/*`, `(dashboard)/agent/*` (bkz. SOURCES A.2) · **Durum:** ✅ tamamlandı — [teslim raporu](../delivered/F1-delivered.md) (şartnameden sapmalar §6'da)
 
 ---
 

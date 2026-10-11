@@ -83,7 +83,13 @@ export class DevelopmentAgentModel implements AgentModel {
     if (typeof value['error'] === 'string') return this.answer(`${NOTE}\n\nThat did not work: ${value['error']}`);
     if (answer.name === 'read_table' && isSourceAnswer(parsed)) {
       const result = parsed.result as { name?: string };
-      return this.call('present', { title: result.name ?? 'Table', layout: 'table', source: parsed.source, path: 'rows' });
+      return this.call('present', {
+        title: result.name ?? 'Table',
+        layout: 'table',
+        source: parsed.source,
+        path: 'rows',
+        header: true,
+      });
     }
     if (answer.name === 'present') return this.answer(`${NOTE}\n\nHere it is, laid out above.`);
     if (answer.name === 'read_document' && isSourceAnswer(parsed)) {
