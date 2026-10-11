@@ -82,6 +82,47 @@ const BY_HINT: Record<string, { code: ErrorCode; message: string }> = {
     code: ErrorCode.CONFLICT,
     message: 'Recorded usage cannot be reduced.',
   },
+  // 0007 memory
+  memory_direct_write: {
+    code: ErrorCode.CONFLICT,
+    message: 'A memory starts as a candidate and is verified before it is kept.',
+  },
+  memory_tier_exceeds_source: {
+    code: ErrorCode.CONFLICT,
+    message: 'A memory cannot be trusted more than the source it came from.',
+  },
+  memory_provenance_immutable: {
+    code: ErrorCode.CONFLICT,
+    message: 'What a memory says, and where it came from, does not change.',
+  },
+  memory_transition_invalid: {
+    code: ErrorCode.CONFLICT,
+    message: 'That memory cannot move to that state.',
+  },
+  memory_confirmations_required: {
+    code: ErrorCode.CONFLICT,
+    message: 'A claim from an outside source needs two independent confirmations first.',
+  },
+  memory_approval_required: {
+    code: ErrorCode.CONFLICT,
+    message: 'Only you can approve this memory.',
+  },
+  memory_repromotion_requires_evidence: {
+    code: ErrorCode.CONFLICT,
+    message: 'A demoted memory comes back only with new evidence.',
+  },
+  memory_t0_review: {
+    code: ErrorCode.CONFLICT,
+    message: 'An operator memory is activated with a second signature, after its review period.',
+  },
+  memory_confirmation_not_independent: {
+    code: ErrorCode.CONFLICT,
+    message: 'A confirmation must come from other evidence and another source.',
+  },
+  memory_ledger_immutable: {
+    code: ErrorCode.PERMISSION_DENIED,
+    message: 'The memory ledger cannot be changed.',
+  },
 };
 
 const BY_CONSTRAINT: Record<string, { code: ErrorCode; message: string }> = {
