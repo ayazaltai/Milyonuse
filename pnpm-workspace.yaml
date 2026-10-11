@@ -2,6 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
   - "db"
+  - "evals/*"
 
 # Install-time build scripts are opt-in, one package at a time. Anything absent
 # here does not execute code during install, so a compromised transitive

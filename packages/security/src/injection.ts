@@ -26,6 +26,8 @@ const OVERRIDE = new RegExp(
     // Text that claims the operator's voice: an operator's policy is a signed T0, never words in a message.
     String.raw`\b(operator|system|admin)\s+(policy|policies|instruction|instructions|rule|rules|directive)\b`,
     String.raw`(operatör|sistem|yönetici)\s*(politika|talimat|kural)`,
+    // A role header at the start of a line, the way a transcript would mark who speaks.
+    String.raw`(^|\n)\s*(operator|system|developer|admin|operatör|sistem)\s*:`,
     String.raw`önceki[\s\S]{0,20}(talimat|komut)[\s\S]{0,20}(yok say|unut|görmezden)`,
     String.raw`bundan (sonra|böyle)[\s\S]{0,20}(yapmalısın|zorundasın)`,
     String.raw`sen (artık|şimdi|bundan (sonra|böyle))[\s\S]{0,30}(asistan|ajan|agent|model|bot)`,
@@ -69,6 +71,9 @@ const AUTHORITY = new RegExp(
     String.raw`onay\s*isteme`,
     String.raw`(agent|ajan|asistan)[\s\S]{0,35}(oku|eriş|çalıştır|yükle|sil)(abilir|abilirsin|abilirsiniz|malı|meli)`,
     String.raw`(is|are)\s+(allowed|authori[sz]ed|permitted)\s+to\b`,
+    String.raw`\bauthori[sz](e|es|ed|ing)\b[\s\S]{0,40}\bto\b`,
+    String.raw`\b(skip|waive|disable|bypass|turn\s+off|switch\s+off)\b[\s\S]{0,25}\b(confirmations?|approvals?|checks?|verifications?|safeguards?|reviews?)\b`,
+    String.raw`onay(ları|ı)?[\s\S]{0,15}(atla|devre\s*dışı|kapat)`,
   ].join('|'),
   'iu',
 );

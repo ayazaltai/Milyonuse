@@ -14,7 +14,7 @@
     "lint": { "dependsOn": ["^build"] },
     "test": {
       "dependsOn": ["^build"],
-      "env": ["DATABASE_URL_APP", "DATABASE_URL_PLATFORM", "DATABASE_URL_MIGRATOR"]
+      "env": ["DATABASE_URL_APP", "DATABASE_URL_PLATFORM", "DATABASE_URL_MIGRATOR", "POISONBENCH_LIVE", "POISONBENCH_REPORT", "OPENROUTER_API_KEY"]
     },
     "dev": { "dependsOn": ["^build"], "cache": false, "persistent": true }
   }

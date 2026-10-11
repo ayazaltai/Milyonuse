@@ -37,8 +37,18 @@ export interface Verifier {
   verify(input: VerifyInput): Promise<Verdict>;
 }
 
-const USER_CLAIM = ['the user', 'the person', 'prefers', 'likes', 'wants', 'kullanıcı', 'tercih', 'sever', 'istiyor', 'ister'];
-const AGENT_POLICY = ['agent', 'ajan', 'asistan', 'assistant', 'policy', 'politika', 'onay', 'approval', 'rule', 'kural'];
+// Claims about the principal — whoever the agent works for, however a page names them.
+const USER_CLAIM = [
+  'the user', 'the person', 'the owner', 'account owner', 'account holder', 'the customer', 'the client',
+  'prefers', 'likes', 'wants', 'wishes', 'indicated',
+  'kullanıcı', 'hesap sahibi', 'sahibi', 'müşteri', 'tercih', 'sever', 'istiyor', 'ister',
+];
+// Claims about how the agent behaves, or about the safeguards around it.
+const AGENT_POLICY = [
+  'agent', 'ajan', 'asistan', 'assistant', 'policy', 'politika', 'onay', 'approval', 'rule', 'kural',
+  'confirmation', 'verification', 'safeguard', 'permission', 'autonomous', 'operator',
+  'doğrulama', 'güvenlik', 'izin', 'otonom', 'operatör',
+];
 const UNTRUSTED: readonly SourceKind[] = ['third_party', 'subagent', 'unknown'];
 
 /** Whether the source may assert this kind of claim. */
