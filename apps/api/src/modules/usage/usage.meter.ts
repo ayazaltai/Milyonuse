@@ -4,7 +4,7 @@ import { AppLogger } from '../../common/logging/logger.js';
 import { TenantScope } from '../tenancy/tenant-scope.service.js';
 
 /** What is counted, as `area.measure` (0006, usage_daily.meter). */
-export type Meter = 'agent.requests' | 'agent.tokens' | 'memory.embeddings';
+export type Meter = 'agent.requests' | 'agent.tokens' | 'memory.embeddings' | 'sandbox.seconds' | 'sandbox.runs' | 'web.requests';
 
 export interface UsageAttribution {
   organizationId: string;
@@ -39,6 +39,19 @@ export class UsageMeter {
   /** One call to the embeddings model, for memory. */
   async memoryEmbedding(who: UsageAttribution): Promise<void> {
     await this.count(who, [['memory.embeddings', 1]]);
+  }
+
+  /** One sandbox run, and how long it took — what the daily minutes are counted from. */
+  async sandboxRun(who: UsageAttribution, seconds: number): Promise<void> {
+    await this.count(who, [
+      ['sandbox.runs', 1],
+      ['sandbox.seconds', Math.max(1, Math.ceil(seconds))],
+    ]);
+  }
+
+  /** Requests the agent's web tools made, search and pages alike. */
+  async webRequests(who: UsageAttribution, requests: number): Promise<void> {
+    if (requests > 0) await this.count(who, [['web.requests', requests]]);
   }
 
   /** What a person has counted on a meter today (UTC). */

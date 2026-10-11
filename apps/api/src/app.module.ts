@@ -11,6 +11,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ObservabilityModule } from './modules/observability/observability.module.js';
 import { QueueModule } from './modules/queue/queue.module.js';
 import { TenancyModule } from './modules/tenancy/tenancy.module.js';
+import { ToolsModule } from './modules/tools/tools.module.js';
 import { UsageModule } from './modules/usage/usage.module.js';
 
 /**
@@ -33,6 +34,7 @@ import { UsageModule } from './modules/usage/usage.module.js';
     IdentityModule,
     MemoryModule,
     AgentModule,
+    ToolsModule,
     CronModule,
     HealthModule,
   ],

@@ -4,7 +4,7 @@
 > hand. Regenerate with `pnpm docs:routes`; the test suite fails when this file and the code
 > disagree.
 
-46 routes. Every path is served by `apps/api`; the web app reaches it through a
+47 routes. Every path is served by `apps/api`; the web app reaches it through a
 same-origin rewrite of `/api/v1`. Request and response shapes are the zod schemas in
 `packages/contracts`, and every error carries a machine-readable `code` (`errors.ts`).
 
@@ -75,6 +75,7 @@ A session with a membership and `agents.use`. A person’s own conversations: ev
 | POST | `/api/v1/agent/conversations/:conversationId/messages` | `agents.use` · 20 per min per member · Idempotency-Key | `AgentController.send` |
 | POST | `/api/v1/agent/conversations/:conversationId/messages/stream` | `agents.use` · 20 per min per member | `AgentController.stream` |
 | POST | `/api/v1/agent/conversations/:conversationId/stop` | `agents.use` | `AgentController.stop` |
+| GET | `/api/v1/agent/files/:fileId` | `agents.use` | `FileController.download` |
 | PUT | `/api/v1/agent/messages/:messageId/feedback` | `agents.use` | `AgentController.feedback` |
 | GET | `/api/v1/agent/search` | `agents.use` | `AgentController.search` |
 
