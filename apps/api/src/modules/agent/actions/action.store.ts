@@ -167,11 +167,14 @@ export class ActionStore {
 
   /** Claims the next items: each marked running before it runs, so a crash leaves it uncertain, never pending. */
   async claim(client: pg.PoolClient, id: string, count: number): Promise<{ seq: number; input: unknown }[]> {
+    // MATERIALIZED: an IN (… LIMIT … FOR UPDATE) subquery is rescanned per row, skips the rows this
+    // statement just changed, and so claims past its limit. The CTE picks the slice once.
     const { rows } = await client.query<{ seq: number; input: unknown }>(
-      `UPDATE agent_action_items SET status = 'running'
-        WHERE action_id = $1 AND seq IN (
-          SELECT seq FROM agent_action_items WHERE action_id = $1 AND status = 'pending' ORDER BY seq LIMIT $2 FOR UPDATE)
-        RETURNING seq, input`,
+      `WITH next AS MATERIALIZED (
+         SELECT seq FROM agent_action_items WHERE action_id = $1 AND status = 'pending' ORDER BY seq LIMIT $2 FOR UPDATE)
+       UPDATE agent_action_items i SET status = 'running'
+         FROM next WHERE i.action_id = $1 AND i.seq = next.seq
+       RETURNING i.seq, i.input`,
       [id, count],
     );
     return rows.sort((a, b) => a.seq - b.seq);

@@ -4,7 +4,7 @@
 > hand. Regenerate with `pnpm docs:routes`; the test suite fails when this file and the code
 > disagree.
 
-47 routes. Every path is served by `apps/api`; the web app reaches it through a
+55 routes. Every path is served by `apps/api`; the web app reaches it through a
 same-origin rewrite of `/api/v1`. Request and response shapes are the zod schemas in
 `packages/contracts`, and every error carries a machine-readable `code` (`errors.ts`).
 
@@ -54,7 +54,7 @@ A session with a membership. A person’s own profile, password and sessions —
 
 ## The agent — `/api/v1/agent`
 
-A session with a membership and `agents.use`. A person’s own conversations: every read and write is scoped to the member as well as the workspace, in SQL (0006), so anyone else’s conversation is a 404. Nothing here changes anything outside the conversation. A turn and a summary spend model tokens: limited per member, and refused with `budget_exceeded` once the day’s allowance is spent. `messages/stream` answers as server-sent events.
+A session with a membership and `agents.use`. A person’s own conversations: every read and write is scoped to the member as well as the workspace, in SQL (0006), so anyone else’s conversation is a 404. A tool call that would change something outside becomes an action (0009): classified by the RiskEngine, recorded, and — unless safe, or reversible in auto mode — confirmed by the person under `actions/`, re-checked as it is then, run once. A turn and a summary spend model tokens: limited per member, and refused with `budget_exceeded` once the day’s allowance is spent. `messages/stream` answers as server-sent events.
 
 | Method | Path | Access | Handler |
 |---|---|---|---|
@@ -95,6 +95,21 @@ A session with a membership and `agents.use`. The person’s own memory, read an
 | GET | `/api/v1/memory/ledger` | `agents.use` | `MemoryController.ledger` |
 | POST | `/api/v1/memory/revocations` | `agents.use` | `MemoryController.revoke` |
 | GET | `/api/v1/memory/revocations/preview` | `agents.use` | `MemoryController.preview` |
+
+## Connected apps — `/api/v1/connections`
+
+A session with a membership and `agents.use`. A person’s own MCP servers and Google apps (0009): connected by OAuth 2.1 with PKCE (or a token), their secrets sealed with AES-256-GCM and never answered back; disconnecting deletes the secrets in the database at once. `callback` is where the app sends the browser back: the authorization is used once, by the person who began it.
+
+| Method | Path | Access | Handler |
+|---|---|---|---|
+| GET | `/api/v1/connections` | `agents.use` | `ConnectionsController.list` |
+| POST | `/api/v1/connections` | `agents.use` · 20 per 10 min per member | `ConnectionsController.start` |
+| GET | `/api/v1/connections/:connectionId` | `agents.use` | `ConnectionsController.get` |
+| PATCH | `/api/v1/connections/:connectionId` | `agents.use` | `ConnectionsController.update` |
+| DELETE | `/api/v1/connections/:connectionId` | `agents.use` | `ConnectionsController.revoke` |
+| POST | `/api/v1/connections/:connectionId/refresh` | `agents.use` · 20 per 10 min per member | `ConnectionsController.refresh` |
+| GET | `/api/v1/connections/apps` | `agents.use` | `ConnectionsController.apps` |
+| GET | `/api/v1/connections/callback` | `agents.use` · 30 per 10 min per member | `ConnectionsController.callback` |
 
 ## Operator memory (T0) — `/api/v1/operator`
 
@@ -138,6 +153,8 @@ Outside the version prefix and unauthenticated. `live` checks nothing external; 
 | POST | `/api/v1/auth/password/reset` | Carries a password and a one-time token. |
 | POST | `/api/v1/auth/register` | Carries a password; registering twice mails the same link again. |
 | POST | `/api/v1/auth/verify` | A one-time token, spent by the first call. |
+| POST | `/api/v1/connections` | Carries a token, and answers a single-use authorization — neither may be stored for replay. |
+| POST | `/api/v1/connections/:connectionId/refresh` | Listing again changes nothing but the list. |
 | POST | `/api/v1/me/password` | Carries a password. |
 | POST | `/api/v1/memory/:memoryId/approve` | Approving an approved memory changes nothing. |
 | POST | `/api/v1/memory/:memoryId/forget` | Forgetting a forgotten memory revokes nothing more. |

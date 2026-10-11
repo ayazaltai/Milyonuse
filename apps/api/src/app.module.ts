@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
 import { AgentModule } from './modules/agent/agent.module.js';
+import { ConnectionsModule } from './modules/connections/connections.module.js';
 import { CronModule } from './modules/cron/cron.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
@@ -35,6 +36,7 @@ import { UsageModule } from './modules/usage/usage.module.js';
     MemoryModule,
     AgentModule,
     ToolsModule,
+    ConnectionsModule,
     CronModule,
     HealthModule,
   ],

@@ -79,6 +79,8 @@ export interface AgentTool<S extends z.ZodType = z.ZodType> {
   reversible?: boolean;
   /** The connection a tool of a connected app goes through. */
   connectionId?: string;
+  /** A connected app's own JSON Schema for its arguments, shown to the model as given; `schema` still validates. */
+  parameters?: Record<string, unknown>;
   /**
    * Runs it. For a tool that is not `safe`, called only by the action
    * executor, after the RiskEngine and — unless it ran as it was made — a
@@ -136,7 +138,7 @@ export function specOf(definition: AgentTool): AgentToolSpec {
   return {
     name: definition.name,
     description: definition.description,
-    parameters: toToolSchema(definition.schema),
+    parameters: definition.parameters ?? toToolSchema(definition.schema),
   };
 }
 

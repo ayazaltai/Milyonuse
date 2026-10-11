@@ -61,7 +61,9 @@ const SURFACES: Record<string, Surface> = {
     note:
       'A session with a membership and `agents.use`. A person’s own conversations: every read and ' +
       'write is scoped to the member as well as the workspace, in SQL (0006), so anyone else’s ' +
-      'conversation is a 404. Nothing here changes anything outside the conversation. A turn and a ' +
+      'conversation is a 404. A tool call that would change something outside becomes an action (0009): ' +
+      'classified by the RiskEngine, recorded, and — unless safe, or reversible in auto mode — confirmed ' +
+      'by the person under `actions/`, re-checked as it is then, run once. A turn and a ' +
       'summary spend model tokens: limited per member, and refused with `budget_exceeded` once the ' +
       'day’s allowance is spent. `messages/stream` answers as server-sent events.',
     mayBeUnguarded: false,
@@ -73,6 +75,15 @@ const SURFACES: Record<string, Surface> = {
       'own scope (0007): what the agent remembers, why — provenance, evidence, ledger and derivations — ' +
       'and what the person decides: add in their own words, approve, reaffirm (once a day), forget, ' +
       'withdraw a source with everything built on it. Nothing here writes a memory past its checks.',
+    mayBeUnguarded: false,
+  },
+  connections: {
+    title: 'Connected apps',
+    note:
+      'A session with a membership and `agents.use`. A person’s own MCP servers and Google apps (0009): ' +
+      'connected by OAuth 2.1 with PKCE (or a token), their secrets sealed with AES-256-GCM and never ' +
+      'answered back; disconnecting deletes the secrets in the database at once. `callback` is where the ' +
+      'app sends the browser back: the authorization is used once, by the person who began it.',
     mayBeUnguarded: false,
   },
   operator: {

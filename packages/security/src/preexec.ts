@@ -18,7 +18,8 @@ export interface PreExecFinding {
 
 const BLOCK: readonly [string, RegExp, string][] = [
   ['fork_bomb', /:\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:/, 'fork bomb'],
-  ['recursive_root_delete', /rm\s+-[a-z]*r[a-z]*\s+(--no-preserve-root\s+)?(\/|~|\$HOME)(\*|\s|$)/i, 'recursive delete of the root or home directory'],
+  // The target ends where the path does: a space, the end, or the quote or bracket of code that wraps the command.
+  ['recursive_root_delete', /rm\s+(-[a-z]+\s+)*-[a-z]*r[a-z]*\s+(-[a-z-]+\s+)*(\/|~|\$HOME)\/?\*?(?=[\s'"`;)\]|&]|$)/i, 'recursive delete of the root or home directory'],
   ['mkfs', /\bmkfs(\.\w+)?\s/, 'filesystem format'],
   ['disk_overwrite', /\bdd\s+if=.*\s+of=\/dev\/(sd|nvme|disk|hd|xvd)/, 'disk overwrite'],
   ['pipe_to_shell', /(curl|wget)\s+[^\n|]*\|\s*(sudo\s+)?(bash|sh|zsh|python3?|node)\b/i, 'download piped into an interpreter'],
