@@ -2,7 +2,7 @@
 
 **Amaç:** Agent'lar oturumlar boyunca kullanıcıyı ve dünyayı hatırlar. Bu hafızaya kimin yazdığı, nereden geldiği ve doğrulanıp doğrulanmadığı her zaman bilinir. Zehirli bir kaynak tek işlemle, ondan türeyen her şeyle birlikte silinir.
 
-**Bağımlılık:** F1 · **Kaynak:** Agent 5.5 `memory/*`, `security/{injection,operator}.py`, `evals/poisonbench/*` (bkz. SOURCES B)
+**Bağımlılık:** F1 · **Kaynak:** Agent 5.5 `memory/*`, `security/{injection,operator}.py`, `evals/poisonbench/*` (bkz. SOURCES B) · **Durum:** ✅ tamamlandı — [teslim raporu](../delivered/F2-delivered.md) (şartnameden sapmalar §6'da)
 
 ---
 

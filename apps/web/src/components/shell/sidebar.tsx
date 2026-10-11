@@ -55,7 +55,7 @@ export function Sidebar({ me, locale }: { me: Me; locale: Locale }) {
       items: [
         { href: '/app/agents', label: n.agents, Icon: Bot, soon: true },
         { href: '/app/teams', label: n.teams, Icon: Users, soon: true },
-        { href: '/app/memory', label: n.memory, Icon: BrainCircuit, soon: true },
+        { href: '/app/memory', label: n.memory, Icon: BrainCircuit },
       ],
     },
     {

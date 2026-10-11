@@ -129,3 +129,14 @@ Biçim: **Karar · Gerekçe · Sonuç · Durum**
   - `/` her zaman `/en`'e gider; kişi daha önce başka bir dil seçtiyse oraya.
   - Hesabı olmayan bir adrese giden e-posta İngilizcedir.
 - **Durum:** Kabul (Ayaz, 2026-10-10: "make default as english for always").
+
+### D-18 — Hafızanın uygulama kararları (F2)
+- **Karar:**
+  - Kişinin kendi sözü, turun ne okuduğundan bağımsız olarak her zaman T1'dir. Agent'ın önerisi temiz turda T2, dış kaynak okunmuş turda o kaynakların en az güvenilir olanının seviyesidir.
+  - Bir T3'ü teyit eden her kaynak, o hafızanın türetmesi olarak da kaydedilir; geri çekilmesi hafızayı da götürür.
+  - Hafızadaki zaman damgaları (`created_at`) sunucunun saatidir (0008); yazan taraf belirleyemez.
+  - Agent bir hafızayı unutturamaz, yalnızca ister; kararı kişi verir.
+  - Kopyalar silinmez, `expired` olur; defter ve türetmeler korunur.
+  - Bakım saatliktir. CI'da kural doğrulayıcı çalışır; production'da varsayılan, kurallardan sonra Fast model.
+  - PoisonBench'in held-out ifadeleri için tarayıcıya kalıp yazılmaz; yalnızca kategori düzeyinde genelleme yapılır ve raporlanır.
+- **Durum:** Kabul (F2, 2026-10-11).

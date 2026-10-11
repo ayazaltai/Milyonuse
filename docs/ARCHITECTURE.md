@@ -184,10 +184,11 @@ Promote
    ├─ T3: ≥2 BAĞIMSIZ onay (farklı evidence + kaynak) → active (expires_at)
    ├─ T4 / subagent: asla otomatik değil (kullanıcı onayı)
    └─ T0: yalnızca operatör imzası + review penceresi
-Consolidation (gece + boşta)
+Consolidation (saatlik; cron'da `memory` adımı)
    └─ decay → floor altı: demoted (yeniden terfi yalnızca yeni kanıtla)
       · expire · dedupe · çelişki bayrağı · ledger doğrulama
-Revoke(source_uri) → BFS derivations → revoked + ledger
+Revoke(source_uri) → özyinelemeli derivations (teyit eden kaynaklar dahil) → revoked + ledger
+T0: stage (imza 1) → ≥300 sn → activate (imza 2); saat sunucunun (0008)
 ```
 
 ## 6. Takım run'ı (F5)
