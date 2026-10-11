@@ -4,7 +4,7 @@
 > hand. Regenerate with `pnpm docs:routes`; the test suite fails when this file and the code
 > disagree.
 
-29 routes. Every path is served by `apps/api`; the web app reaches it through a
+41 routes. Every path is served by `apps/api`; the web app reaches it through a
 same-origin rewrite of `/api/v1`. Request and response shapes are the zod schemas in
 `packages/contracts`, and every error carries a machine-readable `code` (`errors.ts`).
 
@@ -73,6 +73,32 @@ A session with a membership and `agents.use`. A person’s own conversations: ev
 | PUT | `/api/v1/agent/messages/:messageId/feedback` | `agents.use` | `AgentController.feedback` |
 | GET | `/api/v1/agent/search` | `agents.use` | `AgentController.search` |
 
+## Verified memory — `/api/v1/memory`
+
+A session with a membership and `agents.use`. The person’s own memory, read and changed in their own scope (0007): what the agent remembers, why — provenance, evidence, ledger and derivations — and what the person decides: add in their own words, approve, reaffirm (once a day), forget, withdraw a source with everything built on it. Nothing here writes a memory past its checks.
+
+| Method | Path | Access | Handler |
+|---|---|---|---|
+| GET | `/api/v1/memory` | `agents.use` | `MemoryController.list` |
+| POST | `/api/v1/memory` | `agents.use` · 30 per 10 min per member · Idempotency-Key | `MemoryController.create` |
+| GET | `/api/v1/memory/:memoryId` | `agents.use` | `MemoryController.detail` |
+| POST | `/api/v1/memory/:memoryId/approve` | `agents.use` | `MemoryController.approve` |
+| POST | `/api/v1/memory/:memoryId/forget` | `agents.use` | `MemoryController.forget` |
+| POST | `/api/v1/memory/:memoryId/keep` | `agents.use` | `MemoryController.keep` |
+| POST | `/api/v1/memory/:memoryId/reaffirm` | `agents.use` | `MemoryController.reaffirm` |
+| GET | `/api/v1/memory/ledger` | `agents.use` | `MemoryController.ledger` |
+| POST | `/api/v1/memory/revocations` | `agents.use` | `MemoryController.revoke` |
+| GET | `/api/v1/memory/revocations/preview` | `agents.use` | `MemoryController.preview` |
+
+## Operator memory (T0) — `/api/v1/operator`
+
+No session: the Ed25519 signature over the claim is the authentication, verified against `MEMORY_OPERATOR_KEYS` (public keys only; the private keys never touch the host). A claim is staged for one organization, and activated by a second signature at least five minutes later (0007).
+
+| Method | Path | Access | Handler |
+|---|---|---|---|
+| POST | `/api/v1/operator/memory/activate` | public · 20 per hour per address | `OperatorController.activate` |
+| POST | `/api/v1/operator/memory/stage` | public · 20 per hour per address | `OperatorController.stage` |
+
 ## Scheduled passes — `/api/v1/cron`
 
 The host's scheduler running the workers when `WORKER_MODE=cron`. Authenticated in the handler by the `CRON_SECRET` bearer, compared in constant time; a 404 under `WORKER_MODE=interval`, where each worker keeps its own timer.
@@ -104,3 +130,10 @@ Outside the version prefix and unauthenticated. `live` checks nothing external; 
 | POST | `/api/v1/auth/register` | Carries a password; registering twice mails the same link again. |
 | POST | `/api/v1/auth/verify` | A one-time token, spent by the first call. |
 | POST | `/api/v1/me/password` | Carries a password. |
+| POST | `/api/v1/memory/:memoryId/approve` | Approving an approved memory changes nothing. |
+| POST | `/api/v1/memory/:memoryId/forget` | Forgetting a forgotten memory revokes nothing more. |
+| POST | `/api/v1/memory/:memoryId/keep` | Keeping a memory twice keeps it once. |
+| POST | `/api/v1/memory/:memoryId/reaffirm` | A reaffirmation is limited to one a day by the service; a repeat is refused, not stored. |
+| POST | `/api/v1/memory/revocations` | Withdrawing a source again revokes nothing more. |
+| POST | `/api/v1/operator/memory/activate` | Authenticated by the signature itself; activating twice is refused by the lifecycle. |
+| POST | `/api/v1/operator/memory/stage` | Authenticated by the signature itself; a repeat stages a second claim the operator sees. |

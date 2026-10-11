@@ -1,4 +1,5 @@
 import type { Principal } from '@milyonuse/contracts';
+import type { RunSource } from '@milyonuse/memory';
 import { z } from 'zod';
 import type { AgentToolSpec } from '../agent-model.port.js';
 
@@ -6,15 +7,17 @@ import type { AgentToolSpec } from '../agent-model.port.js';
  * What a tool is, and what it may answer (ported from App-Milyonus
  * `modules/agent/tools/tool.ts`).
  *
- * In Phase 1 every tool reads: it answers with data the person may see and
- * changes nothing. Tools that change something arrive in Phase 3, and only as
- * proposals the person confirms — never as a write the model makes directly
- * (D-11).
+ * Every tool reads, or proposes: it answers with data the person may see, or
+ * hands a candidate to a pipeline that decides — memory (Phase 2), and from
+ * Phase 3 changes the person confirms. Nothing the model says is written
+ * directly (D-11).
  */
 
 export interface ToolContext {
   principal: Principal;
   conversationId: string;
+  /** The turn: the id of the person's message that started it — what its memory is derived under. */
+  runId: string;
   /** The person's IANA time zone for this turn — a time they give is read in it; UTC when unknown. */
   timeZone: string;
 }
@@ -24,6 +27,12 @@ export interface ToolOutcome {
   data: unknown;
   /** Where a read's answer came from, in words, when the tool's own summary is too general. */
   from?: string;
+  /**
+   * What the tool read from outside the conversation — a document, a page, a
+   * mail. The turn is tainted by it: whatever it proposes to memory is derived
+   * from these, and no more trusted than they are (D-12).
+   */
+  reads?: RunSource[];
 }
 
 export interface AgentTool<S extends z.ZodType = z.ZodType> {

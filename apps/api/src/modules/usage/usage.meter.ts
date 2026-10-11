@@ -4,7 +4,7 @@ import { AppLogger } from '../../common/logging/logger.js';
 import { TenantScope } from '../tenancy/tenant-scope.service.js';
 
 /** What is counted, as `area.measure` (0006, usage_daily.meter). */
-export type Meter = 'agent.requests' | 'agent.tokens';
+export type Meter = 'agent.requests' | 'agent.tokens' | 'memory.embeddings';
 
 export interface UsageAttribution {
   organizationId: string;
@@ -34,6 +34,11 @@ export class UsageMeter {
       ['agent.requests', 1],
       ['agent.tokens', tokens ? tokens.input + tokens.output : 0],
     ]);
+  }
+
+  /** One call to the embeddings model, for memory. */
+  async memoryEmbedding(who: UsageAttribution): Promise<void> {
+    await this.count(who, [['memory.embeddings', 1]]);
   }
 
   /** What a person has counted on a meter today (UTC). */

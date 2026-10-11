@@ -51,6 +51,8 @@ export async function createTestApp(
     DATABASE_URL_PLATFORM: PLATFORM_URL,
     APP_BASE_URL: 'http://127.0.0.1:3000',
     LOG_LEVEL: 'error',
+    // A suite's scripted model answers the turns it scripts; memory is checked by the rules alone.
+    MEMORY_VERIFIER: 'rules',
     ...env,
   });
 

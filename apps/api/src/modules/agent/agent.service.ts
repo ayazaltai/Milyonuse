@@ -20,12 +20,14 @@ import {
   type Principal,
   agentSupersededIds,
 } from '@milyonuse/contracts';
+import { candidateObservations } from '@milyonuse/memory';
 import type pg from 'pg';
 import { AppError } from '../../common/app-error.js';
 import { AppLogger } from '../../common/logging/logger.js';
 import { ENV } from '../../config/config.module.js';
 import type { Env } from '../../config/env.js';
 import { rethrowDatabaseError } from '../tenancy/database-error.js';
+import { MemoryService } from '../memory/memory.service.js';
 import { UsageMeter, todayOf } from '../usage/usage.meter.js';
 import {
   AGENT_MODEL,
@@ -121,6 +123,7 @@ export class AgentService {
     private readonly store: AgentStore,
     private readonly toolbox: AgentToolbox,
     private readonly usage: UsageMeter,
+    private readonly memory: MemoryService,
     @Inject(AGENT_MODEL) private readonly model: AgentModel,
     @Inject(ENV) private readonly env: Env,
     private readonly logger: AppLogger,
@@ -352,12 +355,15 @@ export class AgentService {
       emit({ type: 'step', tool: 'compact', summary: 'Summarised the earlier conversation' });
     }
 
+    // The turn: the person's message that started it. What it reads, and what it remembers, hang on it.
+    const runId = created[0]!.id;
     const context: AgentContext = {
       now: new Date(),
       timeZone,
       person: { name: setup.person.name, locale: setup.person.locale },
       mode,
       summary,
+      memory: await this.memory.renderFor(principal, input.content),
       attachments: setup.attachments.map((a) => ({
         id: a.id,
         name: a.name,
@@ -495,7 +501,7 @@ export class AgentService {
           const answer =
             cut && !parses(call.arguments)
               ? JSON.stringify({ error: CUT_CALL })
-              : await this.runTool(principal, conversationId, timeZone, call.name, call.arguments);
+              : await this.runTool(principal, { conversationId, runId, timeZone }, call.name, call.arguments);
           const toolMessage = await this.store.run(principal, (client) =>
             this.store.addMessage(client, principal, conversationId, {
               role: 'tool',
@@ -512,6 +518,8 @@ export class AgentService {
     } finally {
       clearInterval(watch);
     }
+
+    await this.reflect(principal, input.content, { conversationId, runId });
 
     if (stopped) {
       const note = await this.store.run(principal, (client) =>
@@ -544,20 +552,40 @@ export class AgentService {
     };
   }
 
-  /** Runs one tool call. The answer is what the model reads — a read kept whole, as a source. */
+  /**
+   * Runs one tool call. The answer is what the model reads — a read kept
+   * whole, as a source — and whatever the tool read from outside taints the
+   * turn, before the model can propose anything from it.
+   */
   private async runTool(
     principal: Principal,
-    conversationId: string,
-    timeZone: string,
+    turn: { conversationId: string; runId: string; timeZone: string },
     name: string,
     rawArguments: string,
   ): Promise<string> {
-    const outcome = await this.toolbox.run(name, rawArguments, { principal, conversationId, timeZone });
+    const outcome = await this.toolbox.run(name, rawArguments, { principal, ...turn });
     if (outcome.kind === 'error') return JSON.stringify({ error: outcome.message });
+    if (outcome.reads?.length) await this.memory.recordTaint(principal, turn, outcome.reads);
     // A read is kept whole, as a source `present` can lay out; the model rereads it fitted.
     if (!this.toolbox.isSource(name)) return keepAnswer(outcome.data);
     const from = outcome.from ?? this.toolbox.summaries().get(name) ?? name;
     return keepSource(newSourceId(), from, outcome.data);
+  }
+
+  /**
+   * After a turn, the person's own message is read for durable statements
+   * about themselves; each is proposed to memory as their words (T1) and
+   * passes the same checks as anything else. A failure here never fails the
+   * turn.
+   */
+  private async reflect(principal: Principal, message: string, run: { conversationId: string; runId: string }): Promise<void> {
+    for (const statement of candidateObservations(message)) {
+      try {
+        await this.memory.propose(principal, { content: statement, origin: 'person', ...run });
+      } catch (error) {
+        this.logger.warn('memory reflection skipped a statement', { err: error instanceof Error ? error.message : String(error) });
+      }
+    }
   }
 
   // ─────────────────────────────────────────────────────── what the model reads

@@ -12,7 +12,9 @@ const DOCUMENT_CHUNK = 8_000;
  * Reading what the person attached (ported from App-Milyonus
  * `modules/agent/tools/read.tools.ts`, read_table and read_document): a
  * table a page of lines at a time, a document a stretch of text at a time.
- * Both answer sources, so `present` can lay a table out as it is.
+ * Both answer sources, so `present` can lay a table out as it is — and both
+ * taint the turn: a file is outside text, and what the agent proposes to
+ * remember after reading one is derived from it.
  */
 export function attachmentTools(store: AgentStore): AgentTool[] {
   return [
@@ -36,6 +38,7 @@ export function attachmentTools(store: AgentStore): AgentTool[] {
         return {
           kind: 'data',
           from: `Table “${table.name}”`,
+          reads: [{ kind: 'third_party', uri: `attachment:${table.id}` }],
           data: {
             id: table.id,
             name: table.name,
@@ -70,6 +73,7 @@ export function attachmentTools(store: AgentStore): AgentTool[] {
         return {
           kind: 'data',
           from: `Document “${document.name}”`,
+          reads: [{ kind: 'third_party', uri: `attachment:${document.id}` }],
           data: {
             id: document.id,
             name: document.name,

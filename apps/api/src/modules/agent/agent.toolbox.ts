@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { AppError } from '../../common/app-error.js';
 import { AppLogger } from '../../common/logging/logger.js';
 import type { AgentToolSpec } from './agent-model.port.js';
+import { MemoryService } from '../memory/memory.service.js';
 import { AgentStore } from './agent.store.js';
 import { attachmentTools } from './tools/attachment.tools.js';
+import { memoryTools } from './tools/memory.tools.js';
 import { presentTool } from './tools/present.tool.js';
 import { timeTool } from './tools/time.tool.js';
 import { type AgentTool, type ToolContext, ToolError, type ToolOutcome, describeIssues, specOf } from './tools/tool.js';
@@ -26,9 +28,10 @@ export class AgentToolbox {
 
   constructor(
     store: AgentStore,
+    memory: MemoryService,
     private readonly logger: AppLogger,
   ) {
-    this.tools = [...attachmentTools(store), timeTool(), presentTool(store)];
+    this.tools = [...attachmentTools(store), ...memoryTools(memory), timeTool(), presentTool(store)];
     this.byName = new Map(this.tools.map((t) => [t.name, t]));
     this.specList = this.tools.map(specOf);
   }

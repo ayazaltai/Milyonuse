@@ -17,6 +17,8 @@
     "@fastify/helmet": "13.1.1",
     "@milyonuse/contracts": "workspace:*",
     "@milyonuse/db": "workspace:*",
+    "@milyonuse/memory": "workspace:*",
+    "@milyonuse/security": "workspace:*",
     "@nestjs/common": "12.1.0",
     "@nestjs/core": "12.1.0",
     "@nestjs/platform-fastify": "12.1.0",

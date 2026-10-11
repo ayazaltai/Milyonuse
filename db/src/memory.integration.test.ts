@@ -252,6 +252,24 @@ describe('the lifecycle', () => {
     expect(await stateOf(ada, id)).toBe('t0_staged');
   });
 
+  it('keeps its own clock: a claim staged "an hour ago" still waits out its review gap (0008)', async () => {
+    const id = await asTenant(app, ada.organizationId, async (c) => {
+      const { rows } = await c.query<{ id: string }>(
+        `INSERT INTO memory_items (organization_id, content, tier, state, source_kind, actor, evidence_hash, signature,
+                                   key_fingerprint, created_at)
+         VALUES ($1, 'Never paste keys into chat', 'T0', 't0_staged', 'operator', 'operator', $2, 'c2ln', 'sha256:abc',
+                 now() - interval '1 hour')
+         RETURNING id`,
+        [ada.organizationId, evidence()],
+      );
+      return rows[0]!.id;
+    });
+    const early = await asTenant(app, ada.organizationId, (c) =>
+      c.query(`UPDATE memory_items SET state = 'active', activation_signature = 'c2ln' WHERE id = $1`, [id]),
+    ).catch((e: unknown) => e);
+    expect(hintOf(early)).toBe('memory_t0_review');
+  });
+
   it('refuses an operator claim with no signature', async () => {
     const error = await asTenant(app, ada.organizationId, (c) =>
       c.query(

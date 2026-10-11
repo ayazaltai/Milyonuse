@@ -126,6 +126,23 @@ export const envSchema = z.object({
    */
   AGENT_ZERO_RETENTION: flag(true),
 
+  // ── verified memory (Phase 2)
+  /** The embeddings model, through the same router; absent a key, a deterministic FNV-1a embedder serves. */
+  MEMORY_EMBEDDING_MODEL: modelId.default('openai/text-embedding-3-small'),
+  /**
+   * Who checks a memory before it is kept: `model` asks the Fast-tier model
+   * after the rules (when the router is configured), `rules` only the rules.
+   */
+  MEMORY_VERIFIER: z.enum(['model', 'rules']).default('model'),
+  /**
+   * The operators' Ed25519 public keys, each a base64-encoded PEM,
+   * comma-separated. The only way to an operator's T0 memory; absent, none
+   * can be written.
+   */
+  MEMORY_OPERATOR_KEYS: list.pipe(
+    z.array(z.string().regex(/^[A-Za-z0-9+/]+={0,2}$/, 'MEMORY_OPERATOR_KEYS must list base64-encoded PEM keys')),
+  ),
+
   // ── operations
   /**
    * Who hears when something breaks: a digest of new errors from the system

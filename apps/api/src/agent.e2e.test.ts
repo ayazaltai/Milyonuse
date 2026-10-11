@@ -21,7 +21,7 @@ import {
   type AgentModelRequest,
   type AgentModelResult,
 } from './modules/agent/agent-model.port.js';
-import { agentModelFor } from './modules/agent/agent.module.js';
+import { agentModelFor } from './modules/model/model.module.js';
 import { AgentController } from './modules/agent/agent.controller.js';
 import { AgentService, CUT_CALL } from './modules/agent/agent.service.js';
 import { SUMMARY_INSTRUCTIONS } from './modules/agent/context.js';

@@ -66,6 +66,23 @@ const SURFACES: Record<string, Surface> = {
       'day’s allowance is spent. `messages/stream` answers as server-sent events.',
     mayBeUnguarded: false,
   },
+  memory: {
+    title: 'Verified memory',
+    note:
+      'A session with a membership and `agents.use`. The person’s own memory, read and changed in their ' +
+      'own scope (0007): what the agent remembers, why — provenance, evidence, ledger and derivations — ' +
+      'and what the person decides: add in their own words, approve, reaffirm (once a day), forget, ' +
+      'withdraw a source with everything built on it. Nothing here writes a memory past its checks.',
+    mayBeUnguarded: false,
+  },
+  operator: {
+    title: 'Operator memory (T0)',
+    note:
+      'No session: the Ed25519 signature over the claim is the authentication, verified against ' +
+      '`MEMORY_OPERATOR_KEYS` (public keys only; the private keys never touch the host). A claim is staged ' +
+      'for one organization, and activated by a second signature at least five minutes later (0007).',
+    mayBeUnguarded: true,
+  },
   cron: {
     title: 'Scheduled passes',
     note:

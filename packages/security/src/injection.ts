@@ -23,6 +23,9 @@ const OVERRIDE = new RegExp(
     String.raw`\byou are now\b`,
     String.raw`\bfrom now on\b[\s\S]{0,20}\byou (must|will|should)\b`,
     String.raw`\b(system|developer|admin)\s*(prompt|message|override)\b`,
+    // Text that claims the operator's voice: an operator's policy is a signed T0, never words in a message.
+    String.raw`\b(operator|system|admin)\s+(policy|policies|instruction|instructions|rule|rules|directive)\b`,
+    String.raw`(operatör|sistem|yönetici)\s*(politika|talimat|kural)`,
     String.raw`önceki[\s\S]{0,20}(talimat|komut)[\s\S]{0,20}(yok say|unut|görmezden)`,
     String.raw`bundan (sonra|böyle)[\s\S]{0,20}(yapmalısın|zorundasın)`,
     String.raw`sen (artık|şimdi|bundan (sonra|böyle))[\s\S]{0,30}(asistan|ajan|agent|model|bot)`,
@@ -43,7 +46,7 @@ const IMPERATIVE = new RegExp(
 // Credentials and secret-reading shapes.
 const CREDENTIAL = new RegExp(
   [
-    String.raw`\b(api[_-]?key|secret|token|password|credential|private[_-]?key)\b`,
+    String.raw`\b(api[\s_-]?keys?|secrets?|tokens?|passwords?|passwd|passcodes?|credentials?|private[\s_-]?keys?)\b`,
     String.raw`\.env\b`,
     String.raw`\bsk-[a-z0-9-]{8,}`,
     String.raw`\bghp_[a-z0-9]{20,}`,

@@ -32,6 +32,12 @@ importers:
       '@milyonuse/db':
         specifier: workspace:*
         version: link:../../db
+      '@milyonuse/memory':
+        specifier: workspace:*
+        version: link:../../packages/memory
+      '@milyonuse/security':
+        specifier: workspace:*
+        version: link:../../packages/security
       '@nestjs/common':
         specifier: 12.1.0
         version: 12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2)

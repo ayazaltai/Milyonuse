@@ -58,6 +58,8 @@ export const MEMORY_POLICY = {
   t3Confirmations: 2,
   /** Days an unconfirmed third-party claim waits before it expires. */
   t3TtlDays: 14,
+  /** The trust a tier starts at, and is restored to (F2 §1.1). */
+  ceiling: { T0: 1, T1: 1, T2: 0.85, T3: 0.6, T4: 0.4 } as Record<TrustTier, number>,
   /** Half-life of trust, in days, per tier; T0 never decays. */
   halfLifeDays: { T0: null, T1: 180, T2: 60, T3: 14, T4: 14 } as Record<TrustTier, number | null>,
   /** Sensitive memory decays this much faster (half-life × factor). */
