@@ -4,7 +4,7 @@
 > hand. Regenerate with `pnpm docs:routes`; the test suite fails when this file and the code
 > disagree.
 
-41 routes. Every path is served by `apps/api`; the web app reaches it through a
+46 routes. Every path is served by `apps/api`; the web app reaches it through a
 same-origin rewrite of `/api/v1`. Request and response shapes are the zod schemas in
 `packages/contracts`, and every error carries a machine-readable `code` (`errors.ts`).
 
@@ -59,6 +59,11 @@ A session with a membership and `agents.use`. A person’s own conversations: ev
 | Method | Path | Access | Handler |
 |---|---|---|---|
 | GET | `/api/v1/agent` | `agents.use` | `AgentController.status` |
+| GET | `/api/v1/agent/actions` | `agents.use` | `ActionController.list` |
+| GET | `/api/v1/agent/actions/:actionId` | `agents.use` | `ActionController.get` |
+| POST | `/api/v1/agent/actions/:actionId/confirm` | `agents.use` · 30 per min per member | `ActionController.confirm` |
+| POST | `/api/v1/agent/actions/:actionId/discard` | `agents.use` | `ActionController.discard` |
+| POST | `/api/v1/agent/actions/:actionId/undo` | `agents.use` · 30 per min per member | `ActionController.undo` |
 | GET | `/api/v1/agent/conversations` | `agents.use` | `AgentController.list` |
 | POST | `/api/v1/agent/conversations` | `agents.use` · Idempotency-Key | `AgentController.create` |
 | GET | `/api/v1/agent/conversations/:conversationId` | `agents.use` | `AgentController.get` |
@@ -120,6 +125,9 @@ Outside the version prefix and unauthenticated. `live` checks nothing external; 
 
 | Method | Path | Why not |
 |---|---|---|
+| POST | `/api/v1/agent/actions/:actionId/confirm` | A proposal runs at most once by the database; a second confirm is refused, not repeated. |
+| POST | `/api/v1/agent/actions/:actionId/discard` | Discarding a discarded proposal is refused by the database, not repeated. |
+| POST | `/api/v1/agent/actions/:actionId/undo` | One undo per action: a second is refused while the first stands. |
 | POST | `/api/v1/agent/conversations/:conversationId/messages/stream` | A stream cannot be replayed; the plain messages route takes an Idempotency-Key. |
 | POST | `/api/v1/agent/conversations/:conversationId/stop` | Asking to stop again is the same request; nothing is created. |
 | PUT | `/api/v1/agent/messages/:messageId/feedback` | Rating again sets the same rating; nothing is created twice. |

@@ -865,6 +865,6 @@ describe('the model a deployment gets', () => {
   it('is the router with a key, a labelled stand-in in development without one, and nothing in production', () => {
     expect(agentModelFor(env({ NODE_ENV: 'test', OPENROUTER_API_KEY: 'sk-or-test' }), logger).name).toBe('openrouter');
     expect(agentModelFor(env({ NODE_ENV: 'development' }), logger).name).toBe('development');
-    expect(agentModelFor(env({ NODE_ENV: 'production' }), logger).name).toBe('unconfigured');
+    expect(agentModelFor(env({ NODE_ENV: 'production', SECRETS_KEYS: `1:${'A'.repeat(43)}=` }), logger).name).toBe('unconfigured');
   });
 });

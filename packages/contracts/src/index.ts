@@ -6,3 +6,4 @@ export * from './tenancy.js';
 export * from './account.js';
 export * from './agent.js';
 export * from './memory.js';
+export * from './actions.js';

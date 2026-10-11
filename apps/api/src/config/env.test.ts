@@ -37,7 +37,16 @@ describe('loadEnv', () => {
     ...valid,
     NODE_ENV: 'production',
     DATABASE_URL_PLATFORM: 'postgres://milyonuse_platform:x@db/milyonuse',
+    SECRETS_KEYS: `1:${'A'.repeat(43)}=`,
   };
+
+  it('refuses production without the keys connection secrets are sealed with, and a local sandbox', () => {
+    const ready = { ...production, MAIL_API_TOKEN: 'token' };
+    expect(() => loadEnv({ ...ready, SECRETS_KEYS: '' } as NodeJS.ProcessEnv)).toThrow(/SECRETS_KEYS is required/);
+    expect(() => loadEnv({ ...ready, SECRETS_KEYS: '1:short' } as NodeJS.ProcessEnv)).toThrow(/version:base64/);
+    expect(() => loadEnv({ ...ready, SANDBOX_PROVIDER: 'local' } as NodeJS.ProcessEnv)).toThrow(/development only/);
+    expect(loadEnv(ready as NodeJS.ProcessEnv).SANDBOX_PROVIDER).toBe('none');
+  });
 
   it('refuses production without mail', () => {
     // Otherwise nobody could confirm an address or recover a password.

@@ -5,6 +5,7 @@ import { AppLogger } from '../../common/logging/logger.js';
 import { ENV } from '../../config/config.module.js';
 import type { Env } from '../../config/env.js';
 import { PLATFORM_POOL } from '../../database/database.module.js';
+import { ActionService } from '../agent/actions/action.service.js';
 import { MemoryWorker } from '../memory/memory.worker.js';
 import { OperationsWorker } from '../observability/operations.worker.js';
 import { JobWorker } from '../queue/job.worker.js';
@@ -37,6 +38,7 @@ export interface PassResult {
  *                 from any step before it is in the mail it sends
  *   quarter-hour  the job queue (agent schedules join it in Phase 6)
  *   hour          upkeep of every table that only grows, memory consolidation,
+ *                 proposals nobody answered and runs a crash interrupted,
  *                 and the self-probe
  *
  * Every pass is safe to overlap with another: claims use SKIP LOCKED and
@@ -82,6 +84,7 @@ export class CronService {
     } else {
       await step('purge', () => get(OperationsWorker).purge());
       await step('memory', () => get(MemoryWorker).consolidate());
+      await step('actions', () => get(ActionService).sweep());
       await step('selfProbe', () => get(OperationsWorker).probe());
     }
 

@@ -9,6 +9,7 @@ import {
   type AgentConversationView,
   type AgentFeedbackInput,
   type AgentMessageInput,
+  type AgentActionView,
   type AgentMode,
   type AgentSearchHit,
   type AgentStatus,
@@ -38,7 +39,8 @@ import {
   type AgentModelUsage,
 } from './agent-model.port.js';
 import { AgentStore, type MessageRow, attachmentView, conversationView, messageView } from './agent.store.js';
-import { AgentToolbox } from './agent.toolbox.js';
+import { ActionService } from './actions/action.service.js';
+import { AgentToolbox, type ToolSet } from './agent.toolbox.js';
 import { forModel, keepAnswer, keepSource, newSourceId } from './answers.js';
 import {
   type ContextTurn,
@@ -124,6 +126,7 @@ export class AgentService {
     private readonly toolbox: AgentToolbox,
     private readonly usage: UsageMeter,
     private readonly memory: MemoryService,
+    private readonly actions: ActionService,
     @Inject(AGENT_MODEL) private readonly model: AgentModel,
     @Inject(ENV) private readonly env: Env,
     private readonly logger: AppLogger,
@@ -170,12 +173,12 @@ export class AgentService {
   async get(principal: Principal, conversationId: string): Promise<AgentConversationView> {
     return this.store.run(principal, async (client) => {
       const conversation = await this.store.conversation(client, conversationId);
-      const [messages, attachments, ratings, memory] = await Promise.all([
-        this.store.messages(client, conversationId),
-        this.store.attachments(client, conversationId),
-        this.store.ratings(client, conversationId),
-        this.store.summary(client, conversationId),
-      ]);
+      // One client runs one query at a time.
+      const messages = await this.store.messages(client, conversationId);
+      const attachments = await this.store.attachments(client, conversationId);
+      const ratings = await this.store.ratings(client, conversationId);
+      const memory = await this.store.summary(client, conversationId);
+      const actions = await this.actions.forConversation(client, conversationId);
       const summaries = this.toolbox.summaries();
       // Folded by a later edit, and how the person rated each answer.
       const superseded = agentSupersededIds(messages);
@@ -186,6 +189,7 @@ export class AgentService {
         ),
         attachments: attachments.map(attachmentView),
         memory,
+        actions,
       };
     });
   }
@@ -329,7 +333,14 @@ export class AgentService {
         person: await this.person(client, principal),
       };
     });
-    const shown = this.toolbox.summaries();
+    // The person's tools as they are at the turn's start: everyone's, and their connected apps'.
+    const toolset = await this.toolbox.forPrincipal(principal);
+    const shown = toolset.summaries();
+    const turnActions: AgentActionView[] = [];
+    const onAction = (action: AgentActionView) => {
+      turnActions.push(action);
+      emit({ type: 'action', action });
+    };
     const show = (row: MessageRow) => emit({ type: 'message', message: messageView(row, shown) });
     show(created[0]!);
     const { conversation } = setup;
@@ -364,6 +375,7 @@ export class AgentService {
       mode,
       summary,
       memory: await this.memory.renderFor(principal, input.content),
+      actions: await this.actions.recentFor(principal, conversationId),
       attachments: setup.attachments.map((a) => ({
         id: a.id,
         name: a.name,
@@ -379,7 +391,7 @@ export class AgentService {
     // The instructions come first and never change between calls: a provider caches them.
     const stable = stablePrompt();
     const cacheablePrefix = system.startsWith(stable) ? stable.length : undefined;
-    const tools = this.toolbox.specs();
+    const tools = toolset.specs();
 
     let stopped: StopReason | null = null;
     let lastInput = 0;
@@ -501,13 +513,20 @@ export class AgentService {
           const answer =
             cut && !parses(call.arguments)
               ? JSON.stringify({ error: CUT_CALL })
-              : await this.runTool(principal, { conversationId, runId, timeZone }, call.name, call.arguments);
+              : await this.runTool(
+                  principal,
+                  { conversationId, runId, timeZone, mode, messageId: reply.id, toolCallId: call.id },
+                  toolset,
+                  call.name,
+                  call.arguments,
+                  onAction,
+                );
           const toolMessage = await this.store.run(principal, (client) =>
             this.store.addMessage(client, principal, conversationId, {
               role: 'tool',
               content: answer,
               toolCallId: call.id,
-              toolName: /^[a-z_]{1,64}$/.test(call.name) ? call.name : 'unknown_tool',
+              toolName: /^[a-z][a-z0-9_]{0,63}$/.test(call.name) ? call.name : 'unknown_tool',
             }),
           );
           show(toolMessage);
@@ -549,27 +568,77 @@ export class AgentService {
       messages: created.map((m) => messageView(m, shown)),
       stopped: ended,
       usage: spent,
+      actions: turnActions,
     };
   }
 
   /**
-   * Runs one tool call. The answer is what the model reads — a read kept
-   * whole, as a source — and whatever the tool read from outside taints the
-   * turn, before the model can propose anything from it.
+   * Runs one tool call. Its arguments are parsed, then the RiskEngine decides
+   * (D-11): a safe read runs here, and its answer is what the model reads — a
+   * read kept whole, as a source — while whatever it read from outside taints
+   * the turn before the model can propose anything from it. Anything else is
+   * an action: run as it is made where the mode allows it, recorded either
+   * way, or put on a card for the person — and the model is told which, so it
+   * never says something was done that was not.
    */
   private async runTool(
     principal: Principal,
-    turn: { conversationId: string; runId: string; timeZone: string },
+    turn: {
+      conversationId: string;
+      runId: string;
+      timeZone: string;
+      mode: AgentMode;
+      messageId: string;
+      toolCallId: string;
+    },
+    toolset: ToolSet,
     name: string,
     rawArguments: string,
+    onAction: (action: AgentActionView) => void,
   ): Promise<string> {
-    const outcome = await this.toolbox.run(name, rawArguments, { principal, ...turn });
-    if (outcome.kind === 'error') return JSON.stringify({ error: outcome.message });
-    if (outcome.reads?.length) await this.memory.recordTaint(principal, turn, outcome.reads);
-    // A read is kept whole, as a source `present` can lay out; the model rereads it fitted.
-    if (!this.toolbox.isSource(name)) return keepAnswer(outcome.data);
-    const from = outcome.from ?? this.toolbox.summaries().get(name) ?? name;
-    return keepSource(newSourceId(), from, outcome.data);
+    const prepared = toolset.prepare(name, rawArguments);
+    if (prepared.kind === 'error') return JSON.stringify({ error: prepared.message });
+    const { tool, args } = prepared;
+    const context = { principal, conversationId: turn.conversationId, runId: turn.runId, timeZone: turn.timeZone, mode: turn.mode };
+    const verdict = this.actions.classify(tool, args, turn.mode);
+    if (verdict.decision === 'block') return JSON.stringify({ error: `Not run: ${verdict.reason}.` });
+
+    if (verdict.decision === 'auto' && verdict.risk === 'safe') {
+      const outcome = await this.toolbox.execute(tool, args, context);
+      if (outcome.kind === 'error') return JSON.stringify({ error: outcome.message });
+      if (outcome.reads?.length) await this.memory.recordTaint(principal, turn, outcome.reads);
+      // A read is kept whole, as a source `present` can lay out; the model rereads it fitted.
+      if (!toolset.isSource(name)) return keepAnswer(outcome.data);
+      return keepSource(newSourceId(), outcome.from ?? tool.summary, outcome.data);
+    }
+
+    let action: AgentActionView;
+    try {
+      action = await this.actions.propose(principal, { ...context, messageId: turn.messageId, toolCallId: turn.toolCallId }, tool, args, verdict);
+    } catch (error) {
+      if (error instanceof AppError) return JSON.stringify({ error: error.message });
+      throw error;
+    }
+    onAction(action);
+    if (action.status === 'proposed') {
+      return keepAnswer({
+        proposed: true,
+        actionId: action.id,
+        title: action.preview.title,
+        why: action.reason,
+        note: 'Shown to the person as a card to confirm. It has NOT been done. Say what it will do and that it waits for their confirmation.',
+      });
+    }
+    return keepAnswer({
+      actionId: action.id,
+      status: action.status,
+      result: action.result,
+      error: action.error,
+      note:
+        action.status === 'completed'
+          ? 'Done, and recorded; the person can undo it from its card where it can be undone.'
+          : `It did not succeed: ${action.error ?? 'unknown error'}. Say so plainly.`,
+    });
   }
 
   /**

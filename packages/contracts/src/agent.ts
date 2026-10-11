@@ -1,3 +1,4 @@
+import type { AgentActionView } from './actions.js';
 import { z } from 'zod';
 import { timeZoneSchema } from './account.js';
 import { ulidSchema } from './primitives.js';
@@ -252,6 +253,8 @@ export interface AgentConversationView {
    * own words: read by the model in place of those messages.
    */
   memory: string | null;
+  /** What the agent proposed or did in this conversation — the cards. */
+  actions: AgentActionView[];
 }
 
 /** What /compact answers: the conversation, the summary now read in place of what it covers, and how much it covers. */
@@ -283,6 +286,8 @@ export interface AgentTurn {
   messages: AgentMessageView[];
   stopped: AgentTurnStop | null;
   usage: AgentTurnUsage;
+  /** The actions this turn proposed or ran. */
+  actions: AgentActionView[];
 }
 
 /** What the streaming route sends, one server-sent event each, as the turn happens. */
@@ -291,5 +296,7 @@ export type AgentStreamEvent =
   /** A piece of the agent's answer as it is written; the round's `message` then carries it whole. */
   | { type: 'text'; round: number; text: string }
   | { type: 'step'; tool: string; summary: string }
+  /** An action proposed or run, as its card shows it. */
+  | { type: 'action'; action: AgentActionView }
   | { type: 'done'; turn: AgentTurn }
   | { type: 'error'; code: string; message: string };

@@ -1,5 +1,6 @@
-import type { Principal } from '@milyonuse/contracts';
+import type { AgentMode, Principal } from '@milyonuse/contracts';
 import type { RunSource } from '@milyonuse/memory';
+import type { ToolRisk } from '@milyonuse/security';
 import { z } from 'zod';
 import type { AgentToolSpec } from '../agent-model.port.js';
 
@@ -10,7 +11,9 @@ import type { AgentToolSpec } from '../agent-model.port.js';
  * Every tool reads, or proposes: it answers with data the person may see, or
  * hands a candidate to a pipeline that decides — memory (Phase 2), and from
  * Phase 3 changes the person confirms. Nothing the model says is written
- * directly (D-11).
+ * directly (D-11): a tool that is not `safe` is never run by the turn itself;
+ * the RiskEngine decides whether it runs now, as a recorded action, or waits
+ * on a card for the person (modules/agent/actions).
  */
 
 export interface ToolContext {
@@ -20,6 +23,30 @@ export interface ToolContext {
   runId: string;
   /** The person's IANA time zone for this turn — a time they give is read in it; UTC when unknown. */
   timeZone: string;
+  /** How the person asked the agent to work this turn; a confirmed action runs as `ask`. */
+  mode?: AgentMode | undefined;
+  /** The action this run belongs to, when a confirmed proposal is running it. */
+  actionId?: string | undefined;
+}
+
+/** What a proposal card shows: what will happen, in the person's terms. */
+export interface ActionPreview {
+  title: string;
+  /** One line under the title: who, where, when. */
+  summary?: string | undefined;
+  /** Labelled values: To, Subject, When … */
+  fields?: { label: string; value: string }[] | undefined;
+  /** A longer body — the message to be sent, the code to be run. */
+  body?: string | undefined;
+  /** For many items: the first few, as rows. */
+  table?: { columns: string[]; rows: string[][] } | undefined;
+  warnings?: string[] | undefined;
+}
+
+/** The call that undoes a completed one — proposed, like any other. */
+export interface InverseCall {
+  tool: string;
+  args: Record<string, unknown>;
 }
 
 export interface ToolOutcome {
@@ -46,7 +73,25 @@ export interface AgentTool<S extends z.ZodType = z.ZodType> {
    * something the model reads (the time, a card it drew).
    */
   source: boolean;
+  /** What running it risks (D-11). Omitted: `safe` — it only reads, or writes only into the person's own space. */
+  risk?: ToolRisk;
+  /** Whether what it does can be taken back. Omitted: true. */
+  reversible?: boolean;
+  /** The connection a tool of a connected app goes through. */
+  connectionId?: string;
+  /**
+   * Runs it. For a tool that is not `safe`, called only by the action
+   * executor, after the RiskEngine and — unless it ran as it was made — a
+   * person's confirmation.
+   */
   run(context: ToolContext, args: z.infer<S>): Promise<ToolOutcome>;
+  /** What the card shows before anyone confirms. Omitted: a generic card of the arguments. */
+  preview?(context: ToolContext, args: z.infer<S>): Promise<ActionPreview> | ActionPreview;
+  /** The pieces a large call is run in, slice by slice; each run by `runItem`. */
+  items?(args: z.infer<S>): unknown[];
+  runItem?(context: ToolContext, args: z.infer<S>, item: unknown): Promise<unknown>;
+  /** The call that undoes this one once it completed, or null when nothing can (an email sent stays sent). */
+  inverse?(args: z.infer<S>, result: unknown): InverseCall | null;
 }
 
 /** Declares a tool with its argument type inferred from its schema. */

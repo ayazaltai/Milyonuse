@@ -143,6 +143,38 @@ export const envSchema = z.object({
     z.array(z.string().regex(/^[A-Za-z0-9+/]+={0,2}$/, 'MEMORY_OPERATOR_KEYS must list base64-encoded PEM keys')),
   ),
 
+  // ── tools and connections (F3)
+  /**
+   * The keys connection secrets are encrypted with (AES-256-GCM), as
+   * `version:base64` pairs, comma-separated; the highest version encrypts and
+   * every listed one decrypts, so a key is rotated by adding the next.
+   * Required in production; development and tests use a fixed stand-in.
+   */
+  SECRETS_KEYS: list.pipe(
+    z.array(z.string().regex(/^[1-9]\d{0,3}:[A-Za-z0-9+/]{43}=$/, 'SECRETS_KEYS must list version:base64 pairs of 32-byte keys')),
+  ),
+  /** Where web_search asks: a keyless fallback, or a provider with its key. */
+  WEB_SEARCH_PROVIDER: z.enum(['duckduckgo', 'brave', 'tavily']).default('duckduckgo'),
+  BRAVE_API_KEY: z.string().min(1).optional(),
+  TAVILY_API_KEY: z.string().min(1).optional(),
+  /**
+   * Where code_run runs code: Vercel Sandbox, a local child process
+   * (development only — it is not isolated), or nowhere.
+   */
+  SANDBOX_PROVIDER: z.enum(['none', 'local', 'vercel']).default('none'),
+  /** Vercel Sandbox credentials: an OIDC token on Vercel, or a token with the team and project elsewhere. */
+  VERCEL_OIDC_TOKEN: z.string().min(1).optional(),
+  VERCEL_TOKEN: z.string().min(1).optional(),
+  VERCEL_TEAM_ID: z.string().min(1).optional(),
+  VERCEL_PROJECT_ID: z.string().min(1).optional(),
+  /** Seconds one code run may take. */
+  SANDBOX_TIMEOUT_SECONDS: z.coerce.number().int().min(5).max(600).default(60),
+  /** Sandbox minutes a person may use a day. */
+  SANDBOX_DAILY_MINUTES: z.coerce.number().int().min(1).max(1440).default(30),
+  /** Google's OAuth client, for Gmail, Calendar and Drive. Unset, those cards say they are not available. */
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+
   // ── operations
   /**
    * Who hears when something breaks: a digest of new errors from the system
@@ -190,6 +222,22 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
         '  DATABASE_URL_PLATFORM is required in production. Registration, session\n' +
         '  lookup and the queue run before a tenant is known and need the platform\n' +
         '  role; falling back to the application role would fail every one of them.',
+    );
+  }
+
+  if (env.NODE_ENV === 'production' && env.SECRETS_KEYS.length === 0) {
+    throw new Error(
+      'Invalid environment configuration:\n' +
+        '  SECRETS_KEYS is required in production. Connection secrets would\n' +
+        '  otherwise be encrypted with the development stand-in key.',
+    );
+  }
+
+  if (env.NODE_ENV === 'production' && env.SANDBOX_PROVIDER === 'local') {
+    throw new Error(
+      'Invalid environment configuration:\n' +
+        '  SANDBOX_PROVIDER=local runs code on the API host, unisolated. It is for\n' +
+        '  development only; use vercel or none in production.',
     );
   }
 
