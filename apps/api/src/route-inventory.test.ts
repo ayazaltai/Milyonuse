@@ -56,6 +56,16 @@ const SURFACES: Record<string, Surface> = {
       'beyond being signed in; every change is in their workspace’s audit log.',
     mayBeUnguarded: false,
   },
+  agent: {
+    title: 'The agent',
+    note:
+      'A session with a membership and `agents.use`. A person’s own conversations: every read and ' +
+      'write is scoped to the member as well as the workspace, in SQL (0006), so anyone else’s ' +
+      'conversation is a 404. Nothing here changes anything outside the conversation. A turn and a ' +
+      'summary spend model tokens: limited per member, and refused with `budget_exceeded` once the ' +
+      'day’s allowance is spent. `messages/stream` answers as server-sent events.',
+    mayBeUnguarded: false,
+  },
   cron: {
     title: 'Scheduled passes',
     note:

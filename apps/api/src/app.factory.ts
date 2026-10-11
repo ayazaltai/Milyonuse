@@ -9,6 +9,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
 import { AppLogger } from './common/logging/logger.js';
 import { registerRawBody } from './common/raw-body.js';
 import { registerRequestContext } from './common/request-context.plugin.js';
+import { registerUploads } from './common/uploads.js';
 import { ENV } from './config/config.module.js';
 import type { Env } from './config/env.js';
 import { loadEnv } from './config/env.js';
@@ -55,6 +56,7 @@ export async function createApp(): Promise<{ app: NestFastifyApplication; env: E
   const fastify = app.getHttpAdapter().getInstance();
   registerRequestContext(fastify);
   registerRawBody(fastify);
+  registerUploads(fastify);
   registerLogFlush(fastify, app.get(SystemLogService));
   app.useGlobalFilters(new AllExceptionsFilter(logger));
 

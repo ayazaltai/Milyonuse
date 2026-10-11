@@ -4,7 +4,7 @@
 > hand. Regenerate with `pnpm docs:routes`; the test suite fails when this file and the code
 > disagree.
 
-15 routes. Every path is served by `apps/api`; the web app reaches it through a
+29 routes. Every path is served by `apps/api`; the web app reaches it through a
 same-origin rewrite of `/api/v1`. Request and response shapes are the zod schemas in
 `packages/contracts`, and every error carries a machine-readable `code` (`errors.ts`).
 
@@ -52,6 +52,27 @@ A session with a membership. A person’s own profile, password and sessions —
 | GET | `/api/v1/me/sessions` | member | `MeController.listSessions` |
 | DELETE | `/api/v1/me/sessions/:sessionId` | member | `MeController.endSession` |
 
+## The agent — `/api/v1/agent`
+
+A session with a membership and `agents.use`. A person’s own conversations: every read and write is scoped to the member as well as the workspace, in SQL (0006), so anyone else’s conversation is a 404. Nothing here changes anything outside the conversation. A turn and a summary spend model tokens: limited per member, and refused with `budget_exceeded` once the day’s allowance is spent. `messages/stream` answers as server-sent events.
+
+| Method | Path | Access | Handler |
+|---|---|---|---|
+| GET | `/api/v1/agent` | `agents.use` | `AgentController.status` |
+| GET | `/api/v1/agent/conversations` | `agents.use` | `AgentController.list` |
+| POST | `/api/v1/agent/conversations` | `agents.use` · Idempotency-Key | `AgentController.create` |
+| GET | `/api/v1/agent/conversations/:conversationId` | `agents.use` | `AgentController.get` |
+| PATCH | `/api/v1/agent/conversations/:conversationId` | `agents.use` | `AgentController.update` |
+| DELETE | `/api/v1/agent/conversations/:conversationId` | `agents.use` | `AgentController.remove` |
+| POST | `/api/v1/agent/conversations/:conversationId/attachments` | `agents.use` · 30 per 10 min per member · Idempotency-Key | `AgentController.attach` |
+| POST | `/api/v1/agent/conversations/:conversationId/compact` | `agents.use` · 10 per min per member · Idempotency-Key | `AgentController.compact` |
+| GET | `/api/v1/agent/conversations/:conversationId/export` | `agents.use` | `AgentController.exportConversation` |
+| POST | `/api/v1/agent/conversations/:conversationId/messages` | `agents.use` · 20 per min per member · Idempotency-Key | `AgentController.send` |
+| POST | `/api/v1/agent/conversations/:conversationId/messages/stream` | `agents.use` · 20 per min per member | `AgentController.stream` |
+| POST | `/api/v1/agent/conversations/:conversationId/stop` | `agents.use` | `AgentController.stop` |
+| PUT | `/api/v1/agent/messages/:messageId/feedback` | `agents.use` | `AgentController.feedback` |
+| GET | `/api/v1/agent/search` | `agents.use` | `AgentController.search` |
+
 ## Scheduled passes — `/api/v1/cron`
 
 The host's scheduler running the workers when `WORKER_MODE=cron`. Authenticated in the handler by the `CRON_SECRET` bearer, compared in constant time; a 404 under `WORKER_MODE=interval`, where each worker keeps its own timer.
@@ -73,6 +94,9 @@ Outside the version prefix and unauthenticated. `live` checks nothing external; 
 
 | Method | Path | Why not |
 |---|---|---|
+| POST | `/api/v1/agent/conversations/:conversationId/messages/stream` | A stream cannot be replayed; the plain messages route takes an Idempotency-Key. |
+| POST | `/api/v1/agent/conversations/:conversationId/stop` | Asking to stop again is the same request; nothing is created. |
+| PUT | `/api/v1/agent/messages/:messageId/feedback` | Rating again sets the same rating; nothing is created twice. |
 | POST | `/api/v1/auth/login` | Carries a password. |
 | POST | `/api/v1/auth/logout` | Signing out twice leaves the caller signed out once. |
 | POST | `/api/v1/auth/password/forgot` | Asking twice mails a fresh link, which replaces the last. |

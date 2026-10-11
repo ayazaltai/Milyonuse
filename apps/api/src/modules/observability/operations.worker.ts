@@ -27,9 +27,10 @@ export interface ProbeResult {
 /**
  * The operational tables' upkeep: the error digest every minute; every hour,
  * whatever has outlived its use — the system log past its retention, rate-limit
- * windows, expired account links and idempotency records, ended sessions and
- * long-finished jobs. On a long-lived server it keeps its own timers; under
- * WORKER_MODE=cron the scheduled passes call it (modules/cron).
+ * windows, expired account links and idempotency records, ended sessions,
+ * long-finished jobs and the agent's expired attachments. On a long-lived
+ * server it keeps its own timers; under WORKER_MODE=cron the scheduled passes
+ * call it (modules/cron).
  */
 @Injectable()
 export class OperationsWorker implements OnApplicationBootstrap, OnModuleDestroy {
@@ -74,6 +75,8 @@ export class OperationsWorker implements OnApplicationBootstrap, OnModuleDestroy
       jobs: count(
         await this.platform.query(`DELETE FROM jobs WHERE finished_at < now() - interval '14 days'`),
       ),
+      // A table or a document handed to the agent is kept a few days, then goes (0006).
+      agentAttachments: count(await this.platform.query(`DELETE FROM agent_attachments WHERE expires_at <= now()`)),
     };
   }
 

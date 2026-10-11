@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from './config/config.module.js';
 import { DatabaseModule } from './database/database.module.js';
+import { AgentModule } from './modules/agent/agent.module.js';
 import { CronModule } from './modules/cron/cron.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
@@ -8,12 +9,13 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { ObservabilityModule } from './modules/observability/observability.module.js';
 import { QueueModule } from './modules/queue/queue.module.js';
 import { TenancyModule } from './modules/tenancy/tenancy.module.js';
+import { UsageModule } from './modules/usage/usage.module.js';
 
 /**
  * Feature modules are added here as the phases land (PLAN.md §4):
  *   F0  config, database, notifications, observability, queue, tenancy,
  *       identity, cron, health
- *   F1  agent · F2 memory · F3 connections, sandbox · F4 studio, skills
+ *   F1  usage, agent · F2 memory · F3 connections, sandbox · F4 studio, skills
  *   F5  teams · F6 automations · F7 channels · F8 billing · F9 mcp, compliance
  */
 @Module({
@@ -24,7 +26,9 @@ import { TenancyModule } from './modules/tenancy/tenancy.module.js';
     ObservabilityModule,
     QueueModule,
     TenancyModule,
+    UsageModule,
     IdentityModule,
+    AgentModule,
     CronModule,
     HealthModule,
   ],

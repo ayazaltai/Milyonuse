@@ -25,6 +25,9 @@ const flag = (defaultOn: boolean) =>
     .optional()
     .transform((v) => (defaultOn ? v !== 'false' : v === 'true'));
 
+/** A model router's identifier — `anthropic/claude-sonnet-5-5`. Mirrors 0006's check. */
+const modelId = z.string().regex(/^[A-Za-z0-9._:/~-]{1,120}$/, 'expected a model identifier such as anthropic/claude-sonnet-5-5');
+
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
@@ -93,6 +96,35 @@ export const envSchema = z.object({
   MAIL_API_TOKEN: z.string().min(1).optional(),
   MAIL_API_BASE_URL: z.string().url().default('https://api.mail.hostinger.com'),
   MAIL_FROM: z.string().default('Milyonuse <no-reply@milyonuse.com>'),
+
+  // ── the agent (D-03)
+  // The model router the agent talks through. Absent in development, a
+  // rule-based stand-in answers and says so; absent in production, the API
+  // still starts and the agent answers 503 (agent_not_configured).
+  OPENROUTER_API_KEY: z.string().min(1).optional(),
+  /** The model a new conversation uses: an OpenRouter identifier that can call tools. */
+  AGENT_MODEL: modelId.default('anthropic/claude-sonnet-5-5'),
+  /** The models a person may choose between, comma-separated. AGENT_MODEL is always one. */
+  AGENT_MODELS: list.pipe(z.array(modelId)),
+  /**
+   * What people see a model called, when the tier read from its identifier is
+   * not the right word: `id=Label|One line on when to use it;…`.
+   */
+  AGENT_MODEL_LABELS: z.string().max(4000).optional(),
+  /** Tokens one person's agent may spend in a UTC day — a ceiling on accidents until plans arrive (F8). */
+  AGENT_DAILY_TOKENS: z.coerce.number().int().min(1000).max(1_000_000_000).default(2_000_000),
+  /** Tokens one turn may spend across its model calls before it pauses and says so. */
+  AGENT_TURN_TOKENS: z.coerce.number().int().min(10_000).max(100_000_000).default(400_000),
+  /**
+   * Tokens of conversation the model rereads on each call. Older turns beyond
+   * it are summarised by the agent and read as that summary.
+   */
+  AGENT_CONTEXT_TOKENS: z.coerce.number().int().min(8_000).max(400_000).default(60_000),
+  /**
+   * Route only to endpoints that keep nothing (the router's zero data
+   * retention). On unless `false` — some models have no such endpoint.
+   */
+  AGENT_ZERO_RETENTION: flag(true),
 
   // ── operations
   /**

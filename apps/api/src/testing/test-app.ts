@@ -7,6 +7,7 @@ import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter.js'
 import { AppLogger } from '../common/logging/logger.js';
 import { registerRawBody } from '../common/raw-body.js';
 import { registerRequestContext } from '../common/request-context.plugin.js';
+import { registerUploads } from '../common/uploads.js';
 import { API_PREFIX, UNPREFIXED_ROUTES } from '../config/routing.js';
 import { APP_URL, PLATFORM_URL } from '../database/database.testing.js';
 import { MAILER, type Mailer, type MailMessage } from '../modules/notifications/mail.port.js';
@@ -25,7 +26,7 @@ export interface TestApp {
   outbox: MailMessage[];
   address: string;
   request(
-    method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     url: string,
     options?: { payload?: unknown; cookie?: string; headers?: Record<string, string> },
   ): ReturnType<NestFastifyApplication['inject']>;
@@ -34,7 +35,16 @@ export interface TestApp {
 
 export const SESSION_COOKIE = 'mu_session';
 
-export async function createTestApp(env: Record<string, string> = {}): Promise<TestApp> {
+/** A provider swapped for the suite's own — a scripted model in place of the router. */
+export interface ProviderOverride {
+  provide: unknown;
+  useValue: unknown;
+}
+
+export async function createTestApp(
+  env: Record<string, string> = {},
+  overrides: ProviderOverride[] = [],
+): Promise<TestApp> {
   Object.assign(process.env, {
     NODE_ENV: 'test',
     DATABASE_URL: APP_URL,
@@ -53,10 +63,9 @@ export async function createTestApp(env: Record<string, string> = {}): Promise<T
     },
   };
 
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-    .overrideProvider(MAILER)
-    .useValue(mailer)
-    .compile();
+  let builder = Test.createTestingModule({ imports: [AppModule] }).overrideProvider(MAILER).useValue(mailer);
+  for (const override of overrides) builder = builder.overrideProvider(override.provide).useValue(override.useValue);
+  const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<NestFastifyApplication>(new FastifyAdapter({ trustProxy: true }), {
     logger: new AppLogger('error'),
     bodyParser: false,
@@ -64,6 +73,7 @@ export async function createTestApp(env: Record<string, string> = {}): Promise<T
   const fastify = app.getHttpAdapter().getInstance();
   registerRequestContext(fastify);
   registerRawBody(fastify);
+  registerUploads(fastify);
   app.useGlobalFilters(new AllExceptionsFilter(new AppLogger('error')));
   await app.register(fastifyCookie);
   app.setGlobalPrefix(API_PREFIX, { exclude: UNPREFIXED_ROUTES });

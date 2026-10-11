@@ -4,3 +4,4 @@ export * from './constants.js';
 export * from './health.js';
 export * from './tenancy.js';
 export * from './account.js';
+export * from './agent.js';
