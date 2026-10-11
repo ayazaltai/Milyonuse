@@ -1,7 +1,13 @@
 import { ulidSchema } from '@milyonuse/contracts';
 import { z } from 'zod';
 import type { MemoryService } from '../../memory/memory.service.js';
-import { type AgentTool, tool } from './tool.js';
+import type { MemoryOwner } from '../../memory/memory.store.js';
+import { type AgentTool, type ToolContext, tool } from './tool.js';
+
+/** Whose memory a call reads and writes: the person's — and an agent's own, when it keeps one (0011). */
+function owner(context: ToolContext): MemoryOwner {
+  return context.agent?.memoryScope === 'agent' ? { ...context.principal, agentId: context.agent.id } : context.principal;
+}
 
 /**
  * Memory, as the agent reaches it (ported from Agent 5.5 `memory/tool.py`):
@@ -29,7 +35,7 @@ export function memoryTools(memory: MemoryService): AgentTool[] {
         builds_on: z.array(ulidSchema).max(10).optional().describe('Ids of memories this fact was derived from.'),
       }),
       run: async (context, args) => {
-        const outcome = await memory.propose(context.principal, {
+        const outcome = await memory.propose(owner(context), {
           content: args.content,
           origin: 'agent',
           conversationId: context.conversationId,
@@ -67,7 +73,7 @@ export function memoryTools(memory: MemoryService): AgentTool[] {
         limit: z.number().int().min(1).max(20).optional(),
       }),
       run: async (context, args) => {
-        const found = await memory.recall(context.principal, args.query, args.limit ?? 8);
+        const found = await memory.recall(owner(context), args.query, args.limit ?? 8);
         return {
           kind: 'data',
           from: 'Memory',
@@ -93,7 +99,7 @@ export function memoryTools(memory: MemoryService): AgentTool[] {
         'Use it to personalise before assuming.',
       schema: z.object({ query: z.string().trim().min(2).max(300) }),
       run: async (context, args) => {
-        const found = await memory.recall(context.principal, args.query, 8, { tiers: ['T1', 'T2'] });
+        const found = await memory.recall(owner(context), args.query, 8, { tiers: ['T1', 'T2'] });
         return {
           kind: 'data',
           from: 'What the person told you',
@@ -118,7 +124,7 @@ export function memoryTools(memory: MemoryService): AgentTool[] {
         'The person confirms it on the Memory page; until then it is still remembered.',
       schema: z.object({ memoryId: ulidSchema, reason: z.string().trim().min(3).max(300) }),
       run: async (context, args) => {
-        const requested = await memory.requestForget(context.principal, args.memoryId, args.reason);
+        const requested = await memory.requestForget(owner(context), args.memoryId, args.reason);
         return {
           kind: 'data',
           data: {

@@ -19,12 +19,31 @@ import { TenantScope } from '../tenancy/tenant-scope.service.js';
  * asks, and every write it makes is ledgered by triggers it cannot bypass.
  */
 
-/** Whose memory: all the memory code needs of a principal — so the nightly pass, with no session, uses it too. */
-export type MemoryOwner = Pick<Principal, 'organizationId' | 'memberId'>;
+/**
+ * Whose memory: all the memory code needs of a principal — so the nightly
+ * pass, with no session, uses it too. `agentId` is the lens of a turn with one
+ * of the person's agents that keeps its own memory (0011): it reads the
+ * person's memory and its own, and keeps what it learns as its own.
+ */
+export type MemoryOwner = Pick<Principal, 'organizationId' | 'memberId'> & { agentId?: string | null | undefined };
+
+/** Which memories a read sees: the person's, an agent's own besides, or — for the nightly pass — every scope. */
+export type MemoryLens = string | null | '*';
+
+export function lensOf(owner: MemoryOwner): MemoryLens {
+  return owner.agentId ?? null;
+}
+
+/** The lens as SQL, on parameter `$n`. */
+function inLens(n: number): string {
+  return `($${n}::text = '*' OR m.scope = 'user' OR (m.scope = 'agent' AND m.scope_ref::text = $${n}::text))`;
+}
 
 export interface MemoryRow {
   id: string;
   member_id: string | null;
+  scope: 'user' | 'agent' | 'team';
+  scope_ref: string | null;
   content: string;
   tier: MemoryTier;
   state: MemoryStateName;
@@ -65,9 +84,11 @@ export interface NewMemory {
   ceiling: number;
   embedding: number[] | null;
   embeddingModel: string | null;
+  /** One agent's own (0011); the person's when absent. */
+  agentId?: string | null | undefined;
 }
 
-const ITEM = `m.id, m.member_id, m.content, m.tier::text AS tier, m.state::text AS state, m.source_kind::text AS source_kind,
+const ITEM = `m.id, m.member_id, m.scope::text AS scope, m.scope_ref, m.content, m.tier::text AS tier, m.state::text AS state, m.source_kind::text AS source_kind,
   m.source_uri, m.conversation_id, m.run_id, m.actor, m.evidence_hash, m.sensitivity, m.trust_ceiling::text AS trust_ceiling,
   m.last_reaffirmed_at, m.reaffirm_count, m.state_reason, m.verdict, m.verified_at, m.demoted_at, m.expires_at,
   m.approved_at, m.forget_requested_at, m.forget_reason, m.flagged_with, m.embedding_model, m.created_at,
@@ -149,8 +170,10 @@ export class MemoryStore {
   async insert(client: pg.PoolClient, principal: MemoryOwner, memory: NewMemory): Promise<string> {
     const { rows } = await client.query<{ id: string }>(
       `INSERT INTO memory_items (organization_id, member_id, content, tier, state, source_kind, source_uri, conversation_id,
-                                 run_id, actor, evidence_hash, sensitivity, trust_ceiling, embedding, embedding_model)
-       VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10, $11, $12, $13::vector, $14)
+                                 run_id, actor, evidence_hash, sensitivity, trust_ceiling, embedding, embedding_model,
+                                 scope, scope_ref)
+       VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10, $11, $12, $13::vector, $14,
+               CASE WHEN $15::text IS NULL THEN 'user' ELSE 'agent' END::memory_scope, $15)
        RETURNING id`,
       [
         principal.organizationId,
@@ -167,6 +190,7 @@ export class MemoryStore {
         memory.ceiling,
         memory.embedding ? vectorLiteral(memory.embedding) : null,
         memory.embedding ? memory.embeddingModel : null,
+        memory.agentId ?? null,
       ],
     );
     return rows[0]!.id;
@@ -277,10 +301,11 @@ export class MemoryStore {
   // ─────────────────────────────────────────────────────── confirmation
 
   /** A pending outside claim that says the same, from another source — what a new sighting confirms. */
-  async pendingClaims(client: pg.PoolClient): Promise<MemoryRow[]> {
+  async pendingClaims(client: pg.PoolClient, lens: MemoryLens): Promise<MemoryRow[]> {
     const { rows } = await client.query<MemoryRow>(
-      `SELECT ${ITEM} FROM memory_items m WHERE m.tier = 'T3' AND m.state IN ('pending', 'demoted')
+      `SELECT ${ITEM} FROM memory_items m WHERE m.tier = 'T3' AND m.state IN ('pending', 'demoted') AND ${inLens(1)}
         ORDER BY m.created_at DESC LIMIT 500`,
+      [lens],
     );
     return rows;
   }
@@ -371,37 +396,41 @@ export class MemoryStore {
     query: number[],
     model: string,
     limit: number,
+    lens: MemoryLens,
   ): Promise<(MemoryRow & { similarity: number })[]> {
     const { rows } = await client.query<MemoryRow & { similarity: number }>(
       `SELECT ${ITEM}, 1 - (m.embedding <=> $1::vector) AS similarity
          FROM memory_items m
-        WHERE m.state = 'active' AND m.embedding_model = $2
+        WHERE m.state = 'active' AND m.embedding_model = $2 AND ${inLens(4)}
         ORDER BY m.embedding <=> $1::vector
         LIMIT $3`,
-      [vectorLiteral(query), model, limit],
+      [vectorLiteral(query), model, limit, lens],
     );
     return rows;
   }
 
   /** Recall by words, where vectors cannot help: no embedding yet, or another embedder's. */
-  async byWords(client: pg.PoolClient, words: readonly string[], limit: number): Promise<MemoryRow[]> {
+  async byWords(client: pg.PoolClient, words: readonly string[], limit: number, lens: MemoryLens): Promise<MemoryRow[]> {
     if (words.length === 0) return [];
     const patterns = words.map((w) => `%${w.replace(/[\\%_]/g, (c) => `\\${c}`)}%`);
     const { rows } = await client.query<MemoryRow>(
       `SELECT ${ITEM} FROM memory_items m
-        WHERE m.state = 'active' AND m.content ILIKE ANY ($1::text[])
+        WHERE m.state = 'active' AND m.content ILIKE ANY ($1::text[]) AND ${inLens(3)}
         ORDER BY m.created_at DESC LIMIT $2`,
-      [patterns, limit],
+      [patterns, limit, lens],
     );
     return rows;
   }
 
-  async active(client: pg.PoolClient, filter: { tiers?: readonly MemoryTier[]; limit: number }): Promise<MemoryRow[]> {
+  async active(
+    client: pg.PoolClient,
+    filter: { tiers?: readonly MemoryTier[]; limit: number; lens: MemoryLens },
+  ): Promise<MemoryRow[]> {
     const { rows } = await client.query<MemoryRow>(
       `SELECT ${ITEM} FROM memory_items m
-        WHERE m.state = 'active' AND ($1::text[] IS NULL OR m.tier::text = ANY ($1::text[]))
+        WHERE m.state = 'active' AND ($1::text[] IS NULL OR m.tier::text = ANY ($1::text[])) AND ${inLens(3)}
         ORDER BY m.created_at DESC LIMIT $2`,
-      [filter.tiers ?? null, filter.limit],
+      [filter.tiers ?? null, filter.limit, filter.lens],
     );
     return rows;
   }
@@ -591,6 +620,7 @@ export function memoryView(row: MemoryRow, now = new Date()): MemoryItemView {
     confirmations: row.confirmations,
     reaffirmCount: row.reaffirm_count,
     operator: row.member_id === null,
+    agentId: row.scope === 'agent' ? row.scope_ref : null,
     stateReason: row.state_reason,
     verdict: row.verdict,
     createdAt: row.created_at.toISOString(),

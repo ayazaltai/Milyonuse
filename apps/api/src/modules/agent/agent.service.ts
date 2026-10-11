@@ -19,6 +19,7 @@ import {
   type AgentTurnUsage,
   ErrorCode,
   type Principal,
+  STUDIO_LIMITS,
   agentSupersededIds,
 } from '@milyonuse/contracts';
 import { candidateObservations } from '@milyonuse/memory';
@@ -53,6 +54,7 @@ import {
 } from './context.js';
 import { MODEL_CHARS } from './fit.js';
 import { modelOptions, offeredModels } from './models.js';
+import { type AgentProfile, type TurnAgent, modeFor, modelFor, toolsetFor, turnAgentOf, turnTokensFor } from './profile.js';
 import { AGENT_PROMPT_VERSION, type AgentContext, stablePrompt, systemPrompt } from './prompt.js';
 
 /** A turn answered in one response stays inside the host's 120 s to a first byte. */
@@ -163,10 +165,13 @@ export class AgentService {
   }
 
   async create(principal: Principal, input: AgentConversationCreate): Promise<AgentConversationSummary> {
-    const model = this.checkModel(input.model ?? this.env.AGENT_MODEL);
-    const row = await this.store.run(principal, (client) =>
-      this.store.createConversation(client, principal, { title: input.title ?? NEW_TITLE, model }),
-    );
+    const chosen = this.checkModel(input.model ?? this.env.AGENT_MODEL);
+    const row = await this.store.run(principal, async (client) => {
+      // With one of the person's agents, its tier chooses the model.
+      const profile = input.agentId ? usable(await this.store.agentProfile(client, input.agentId)) : null;
+      const model = profile ? modelFor(this.offered, profile.modelTier, chosen) : chosen;
+      return this.store.createConversation(client, principal, { title: input.title ?? NEW_TITLE, model, agentId: profile?.agentId });
+    });
     return conversationView(row);
   }
 
@@ -285,17 +290,19 @@ export class AgentService {
     }
 
     const started = Date.now();
-    const mode: AgentMode = input.mode ?? 'ask';
     const created: MessageRow[] = [];
 
     // The person's message, with what was handed over with it.
     const setup = await this.store.run(principal, async (client) => {
       const conversation = await this.store.conversation(client, conversationId);
+      // The agent's version as it is now answers; an archived agent answers no more.
+      const profile = conversation.agent_id ? usable(await this.store.agentProfile(client, conversation.agent_id)) : null;
       // A model this deployment no longer offers: the conversation goes on, on the default.
       if (!this.offered.includes(conversation.model)) {
         conversation.model = this.env.AGENT_MODEL;
         await this.store.updateConversation(client, conversationId, { model: conversation.model });
       }
+      if (profile) conversation.model = modelFor(this.offered, profile.modelTier, conversation.model);
       const attachments = await this.store.attachments(client, conversationId);
       const handed = input.attachmentIds.map((id) => {
         const found = attachments.find((a) => a.id === id);
@@ -331,10 +338,18 @@ export class AgentService {
         summary: await this.store.summary(client, conversationId),
         startedAt: clock.rows[0]!.now,
         person: await this.person(client, principal),
+        profile,
+        skills: await this.store.skillIndex(client, profile ? profile.skills : null, STUDIO_LIMITS.skillIndex),
       };
     });
-    // The person's tools as they are at the turn's start: everyone's, and their connected apps'.
-    const toolset = await this.toolbox.forPrincipal(principal);
+    const { profile } = setup;
+    const mode: AgentMode = modeFor(input.mode ?? 'ask', profile);
+    const turnTokens = turnTokensFor(this.env.AGENT_TURN_TOKENS, profile);
+    const agent = turnAgentOf(profile);
+    // What the turn remembers with: the person's memory, and an agent's own when it keeps one (0011).
+    const memoryOwner = profile?.memoryScope === 'agent' ? { ...principal, agentId: profile.agentId } : principal;
+    // The person's tools as they are at the turn's start — everyone's and their connected apps' — as the agent may use them.
+    const toolset = toolsetFor(await this.toolbox.forPrincipal(principal), profile);
     const shown = toolset.summaries();
     const turnActions: AgentActionView[] = [];
     const onAction = (action: AgentActionView) => {
@@ -374,7 +389,7 @@ export class AgentService {
       person: { name: setup.person.name, locale: setup.person.locale },
       mode,
       summary,
-      memory: await this.memory.renderFor(principal, input.content),
+      memory: await this.memory.renderFor(memoryOwner, input.content),
       actions: await this.actions.recentFor(principal, conversationId),
       attachments: setup.attachments.map((a) => ({
         id: a.id,
@@ -386,10 +401,12 @@ export class AgentService {
         pages: a.pages,
         characters: a.text_length,
       })),
+      agent: profile,
+      skills: setup.skills,
     };
     const system = systemPrompt(context);
-    // The instructions come first and never change between calls: a provider caches them.
-    const stable = stablePrompt();
+    // The instructions — and the agent's profile — come first and never change between calls: a provider caches them.
+    const stable = stablePrompt(profile);
     const cacheablePrefix = system.startsWith(stable) ? stable.length : undefined;
     const tools = toolset.specs();
 
@@ -427,7 +444,7 @@ export class AgentService {
         // next call will likely take is what the last one read, plus its answer.
         if (round > 0) {
           const next = lastInput + MAX_OUTPUT_TOKENS;
-          if (spent.tokensIn + spent.tokensOut + next > this.env.AGENT_TURN_TOKENS) {
+          if (spent.tokensIn + spent.tokensOut + next > turnTokens) {
             stopped = 'turn_tokens';
             break;
           }
@@ -490,6 +507,7 @@ export class AgentService {
             tokensOut: result.usage.output,
             costUsd: result.usage.costUsd,
             reasoning: result.reasoning?.slice(0, 40_000),
+            agentVersionId: profile?.versionId,
           }),
         );
         show(reply);
@@ -515,7 +533,7 @@ export class AgentService {
               ? JSON.stringify({ error: CUT_CALL })
               : await this.runTool(
                   principal,
-                  { conversationId, runId, timeZone, mode, messageId: reply.id, toolCallId: call.id },
+                  { conversationId, runId, timeZone, mode, messageId: reply.id, toolCallId: call.id, agent },
                   toolset,
                   call.name,
                   call.arguments,
@@ -542,7 +560,11 @@ export class AgentService {
 
     if (stopped) {
       const note = await this.store.run(principal, (client) =>
-        this.store.addMessage(client, principal, conversationId, { role: 'assistant', content: STOPPED[stopped] }),
+        this.store.addMessage(client, principal, conversationId, {
+          role: 'assistant',
+          content: STOPPED[stopped],
+          agentVersionId: profile?.versionId,
+        }),
       );
       show(note);
       created.push(note);
@@ -590,6 +612,7 @@ export class AgentService {
       mode: AgentMode;
       messageId: string;
       toolCallId: string;
+      agent?: TurnAgent | undefined;
     },
     toolset: ToolSet,
     name: string,
@@ -599,7 +622,14 @@ export class AgentService {
     const prepared = toolset.prepare(name, rawArguments);
     if (prepared.kind === 'error') return JSON.stringify({ error: prepared.message });
     const { tool, args } = prepared;
-    const context = { principal, conversationId: turn.conversationId, runId: turn.runId, timeZone: turn.timeZone, mode: turn.mode };
+    const context = {
+      principal,
+      conversationId: turn.conversationId,
+      runId: turn.runId,
+      timeZone: turn.timeZone,
+      mode: turn.mode,
+      agent: turn.agent,
+    };
     const verdict = this.actions.classify(tool, args, turn.mode);
     if (verdict.decision === 'block') return JSON.stringify({ error: `Not run: ${verdict.reason}.` });
 
@@ -912,6 +942,12 @@ function render(rows: MessageRow[], answerChars: number): AgentModelMessage[] {
     // A tool answer with no call before it — cut off by the window — is left out.
   }
   return out;
+}
+
+/** An agent that may still answer: archived, it is kept with its conversations but takes no new turn. */
+function usable(profile: AgentProfile): AgentProfile {
+  if (profile.archived) throw new AppError(ErrorCode.CONFLICT, 'This agent is archived. Restore it in your studio to talk to it again.');
+  return profile;
 }
 
 /** Whether a tool call's arguments arrived as whole JSON. */

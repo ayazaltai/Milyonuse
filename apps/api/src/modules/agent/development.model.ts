@@ -30,6 +30,8 @@ const ULID = '[0-7][0-9A-HJKMNP-TV-Z]{25}';
  *   "read https://…"              → web_fetch
  *   "search the web for …"        → web_search
  *   "email a@b.c: subject | body" → email_send (always a card)
+ *   "use the <name> skill"         → skill_read
+ *   "save this as a skill called <name>: steps" → skill_propose (staged, replayed)
  *   anything else                 → says what it understands
  *
  * Refuses to construct in production: an agent that pattern-matches must
@@ -87,6 +89,22 @@ export class DevelopmentAgentModel implements AgentModel {
     if (search) return this.call('web_search', { query: search[1]!.replace(/[?.!]+$/, '') });
     const mail = /^email ([^\s:]+@[^\s:]+)\s*:\s*([^|]+)\|([\s\S]+)$/i.exec(text.trim());
     if (mail) return this.call('email_send', { to: [mail[1]!], subject: mail[2]!.trim(), body: mail[3]!.trim() });
+    const useSkill = /\buse the ([a-z0-9][a-z0-9-]{1,63}) skill\b/i.exec(text);
+    if (useSkill) return this.call('skill_read', { name: useSkill[1]!.toLowerCase() });
+    const saveSkill = /\bsave (?:this|it) as a skill called ([a-z0-9][a-z0-9-]{1,63})(?:\s*:\s*([\s\S]+))?$/i.exec(text.trim());
+    if (saveSkill) {
+      const name = saveSkill[1]!.toLowerCase();
+      const words = name.replace(/-/g, ' ');
+      return this.call('skill_propose', {
+        name,
+        description: `How to ${words}, step by step`,
+        triggers: [words],
+        steps:
+          saveSkill[2]?.trim() && saveSkill[2].trim().length >= 40
+            ? saveSkill[2].trim()
+            : `1. Restate the goal of ${words} in one line.\n2. Gather what is needed and check it.\n3. Do it, then say what was done and what is left.`,
+      });
+    }
     if (/\b(time|saat|date|tarih)\b/.test(lower)) return this.call('current_time', {});
 
     return this.answer(
@@ -99,6 +117,7 @@ export class DevelopmentAgentModel implements AgentModel {
         '- “Make a csv file called fruit” — a file to download\n' +
         '- “Read https://…” or “Search the web for …”\n' +
         '- “Email someone@example.com: Subject | Body” — sent only if you confirm\n' +
+        '- “Use the debugging skill”, or “Save this as a skill called weekly-digest”\n' +
         '- Ask for the time',
     );
   }
@@ -160,6 +179,14 @@ export class DevelopmentAgentModel implements AgentModel {
         ? result.results.map((r) => `- [${r.title}](${r.url})`).join('\n') || 'Nothing found.'
         : `“${result.title ?? 'The page'}” opens: ${(result.text ?? '').replace(/\s+/g, ' ').slice(0, 280)}`;
       return this.answer(`${NOTE}\n\n${said}`);
+    }
+    if (answer.name === 'skill_read' && typeof value['skill'] === 'string') {
+      return this.answer(`${NOTE}\n\nI opened the skill “${String(value['name'])}” (version ${String(value['version'])}): ${String(value['description'])}.`);
+    }
+    if (answer.name === 'skill_propose' && typeof value['state'] === 'string') {
+      return this.answer(
+        `${NOTE}\n\n${value['state'] === 'rejected' ? 'The skill was refused by the scanner.' : `I proposed the skill “${String(value['name'])}”: it is replayed, and used only once you approve it on your Skills page.`}`,
+      );
     }
     if (answer.name === 'current_time' && typeof value['local'] === 'string') {
       return this.answer(`${NOTE}\n\nIt is ${value['local']}.`);

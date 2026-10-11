@@ -499,11 +499,11 @@ export class ConnectionsService implements OnModuleInit {
     const rows = await this.run(principal, async (client) => (await client.query<ConnectionRow>(`${SELECT} WHERE status = 'active' ORDER BY created_at`)).rows);
     const out: AgentTool[] = [];
     for (const row of rows) {
-      if (row.transport === 'oauth_api') {
-        out.push(...this.googleTools(row.provider, row.id, row.account_label ?? row.name, this.googleCall(principal, row.id)));
-        continue;
-      }
-      for (const t of row.tools) out.push(this.mcpTool(principal, row, t));
+      const tools =
+        row.transport === 'oauth_api'
+          ? this.googleTools(row.provider, row.id, row.account_label ?? row.name, this.googleCall(principal, row.id))
+          : row.tools.map((t) => this.mcpTool(principal, row, t));
+      out.push(...tools.map((t) => ({ ...t, provider: row.provider })));
     }
     return out;
   }

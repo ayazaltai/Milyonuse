@@ -171,18 +171,32 @@ export class MemoryWorker implements OnApplicationBootstrap, OnModuleDestroy {
 
     await this.store.run(owner, async (client) => {
       const now = new Date();
-      const active = (await this.store.active(client, { limit: 2000 })).filter(
+      const active = (await this.store.active(client, { limit: 2000, lens: "*" })).filter(
         (m) => m.member_id !== null,
       );
-      const plan = planConsolidation(
-        active.map((m) => ({
-          id: m.id,
-          content: m.content,
-          tier: m.tier,
-          trust: trustOf(m, now),
-          createdAt: m.created_at,
-        })),
+      // Within one scope only: an agent's own copy never expires the person's
+      // memory, and the person's never folds an agent's into theirs (0011).
+      const scopes = new Map<string, typeof active>();
+      for (const m of active) {
+        const key = `${m.scope}:${m.scope_ref ?? ""}`;
+        scopes.set(key, [...(scopes.get(key) ?? []), m]);
+      }
+      const plans = [...scopes.values()].map((group) =>
+        planConsolidation(
+          group.map((m) => ({
+            id: m.id,
+            content: m.content,
+            tier: m.tier,
+            trust: trustOf(m, now),
+            createdAt: m.created_at,
+          })),
+        ),
       );
+      const plan = {
+        demote: plans.flatMap((p) => p.demote),
+        duplicates: plans.flatMap((p) => p.duplicates),
+        contradictions: plans.flatMap((p) => p.contradictions),
+      };
       for (const d of plan.demote) {
         await this.store.transition(client, d.id, "demoted", {
           reason: `trust decayed to ${d.trust.toFixed(2)} — needs reconfirmation`,

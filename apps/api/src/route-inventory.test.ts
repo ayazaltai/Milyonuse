@@ -68,6 +68,25 @@ const SURFACES: Record<string, Surface> = {
       'day’s allowance is spent. `messages/stream` answers as server-sent events.',
     mayBeUnguarded: false,
   },
+  agents: {
+    title: 'The agent studio',
+    note:
+      'A session with a membership and `agents.use`. A person’s own agents (0010), from a template or from ' +
+      'nothing. Changing what an agent is writes a new version — numbered by the database and never changed — ' +
+      'and every answer names the version that wrote it; name, face and role title change in place. An agent ' +
+      'is archived, never deleted. Anyone else’s agent is a 404.',
+    mayBeUnguarded: false,
+  },
+  skills: {
+    title: 'Skills',
+    note:
+      'A session with a membership and `agents.use`. A person’s skills (0010): the reviewed bundled ones, ' +
+      'the ones they write and the ones their agents learn. Every version but a bundled one is scanned and ' +
+      'staged; a danger verdict is final. A staged version becomes active only after a replay in the queue ' +
+      'passes and the person approves it — the database refuses it otherwise — and falls with any source it ' +
+      'was learned from.',
+    mayBeUnguarded: false,
+  },
   memory: {
     title: 'Verified memory',
     note:

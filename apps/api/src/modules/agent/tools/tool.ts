@@ -3,6 +3,7 @@ import type { RunSource } from '@milyonuse/memory';
 import type { ToolRisk } from '@milyonuse/security';
 import { z } from 'zod';
 import type { AgentToolSpec } from '../agent-model.port.js';
+import type { TurnAgent } from '../profile.js';
 
 /**
  * What a tool is, and what it may answer (ported from App-Milyonus
@@ -27,6 +28,8 @@ export interface ToolContext {
   mode?: AgentMode | undefined;
   /** The action this run belongs to, when a confirmed proposal is running it. */
   actionId?: string | undefined;
+  /** The person's agent the turn is with (Phase 4): its memory, its skills. */
+  agent?: TurnAgent | undefined;
 }
 
 /** What a proposal card shows: what will happen, in the person's terms. */
@@ -79,6 +82,8 @@ export interface AgentTool<S extends z.ZodType = z.ZodType> {
   reversible?: boolean;
   /** The connection a tool of a connected app goes through. */
   connectionId?: string;
+  /** The app it belongs to — `gmail`, `notion` … — what an agent's `connection:<provider>` allows. */
+  provider?: string;
   /** A connected app's own JSON Schema for its arguments, shown to the model as given; `schema` still validates. */
   parameters?: Record<string, unknown>;
   /**

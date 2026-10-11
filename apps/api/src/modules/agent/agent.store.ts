@@ -9,7 +9,9 @@ import type pg from 'pg';
 import { AppError } from '../../common/app-error.js';
 import { TenantScope } from '../tenancy/tenant-scope.service.js';
 import type { AgentToolCall } from './agent-model.port.js';
+import { parseSkill } from '@milyonuse/skills';
 import { forPage, sourcePrefix } from './answers.js';
+import type { AgentProfile } from './profile.js';
 
 /**
  * The agent's records (0006), read and written in the person's own scope, and
@@ -33,6 +35,8 @@ export interface ConversationRow {
   /** The last message the agent's summary covers, and when it was written. */
   summary_through_id: string | null;
   summarized_at: Date | null;
+  /** The person's agent it is with (0010), or null. */
+  agent_id: string | null;
 }
 
 export interface MessageRow {
@@ -46,7 +50,15 @@ export interface MessageRow {
   model: string | null;
   reasoning: string | null;
   revises: string | null;
+  agent_version_id: string | null;
   created_at: Date;
+}
+
+/** A skill as the prompt's index names it. */
+export interface SkillIndexEntry {
+  name: string;
+  description: string;
+  triggers: string[];
 }
 
 export interface AttachmentRow {
@@ -76,12 +88,14 @@ export interface NewMessage {
   costUsd?: number | null | undefined;
   reasoning?: string | undefined;
   revises?: string | undefined;
+  /** The version of the person's agent that wrote an answer (0010). */
+  agentVersionId?: string | null | undefined;
 }
 
 const CONVERSATION = `c.id, c.member_id, c.title, c.model, c.last_message_at, c.created_at, c.pinned_at,
-  c.summary_through_id, c.summarized_at`;
+  c.summary_through_id, c.summarized_at, c.agent_id`;
 const MESSAGE = `id, role::text AS role, content, tool_calls, tool_call_id, tool_name, attachments, model, reasoning,
-                 revises, created_at`;
+                 revises, agent_version_id, created_at`;
 
 @Injectable()
 export class AgentStore {
@@ -116,12 +130,12 @@ export class AgentStore {
   async createConversation(
     client: pg.PoolClient,
     principal: Principal,
-    input: { title: string; model: string },
+    input: { title: string; model: string; agentId?: string | null | undefined },
   ): Promise<ConversationRow> {
     const { rows } = await client.query<ConversationRow>(
-      `INSERT INTO agent_conversations AS c (organization_id, member_id, title, model)
-       VALUES ($1, $2, $3, $4) RETURNING ${CONVERSATION}`,
-      [principal.organizationId, principal.memberId, input.title, input.model],
+      `INSERT INTO agent_conversations AS c (organization_id, member_id, title, model, agent_id)
+       VALUES ($1, $2, $3, $4, $5) RETURNING ${CONVERSATION}`,
+      [principal.organizationId, principal.memberId, input.title, input.model, input.agentId ?? null],
     );
     return rows[0]!;
   }
@@ -198,6 +212,82 @@ export class AgentStore {
     return rows[0]?.asked ?? false;
   }
 
+  // ─────────────────────────────────────────────────────── agents and skills
+
+  /** The person's agent as it answers now: its current version (0010). */
+  async agentProfile(client: pg.PoolClient, agentId: string): Promise<AgentProfile> {
+    const { rows } = await client.query<{
+      agent_id: string;
+      version_id: string;
+      version: number;
+      name: string;
+      role_title: string;
+      persona: string;
+      instructions: string;
+      model_tier: AgentProfile['modelTier'];
+      tools: string[];
+      memory_scope: AgentProfile['memoryScope'];
+      autonomy: AgentProfile['autonomy'];
+      unattended_policy: AgentProfile['unattendedPolicy'];
+      budget_tokens: number;
+      budget_sandbox_minutes: number;
+      skills: string[];
+      archived: boolean;
+    }>(
+      `SELECT a.id AS agent_id, v.id AS version_id, v.version, a.name, a.role_title, v.persona, v.instructions,
+              v.model_tier, v.tools, v.memory_scope, v.autonomy, v.unattended_policy, v.budget_tokens,
+              v.budget_sandbox_minutes, v.skills::text[] AS skills, a.archived_at IS NOT NULL AS archived
+         FROM agents a JOIN agent_versions v ON v.id = a.current_version_id
+        WHERE a.id = $1`,
+      [agentId],
+    );
+    const r = rows[0];
+    if (!r) throw AppError.notFound('Agent');
+    return {
+      agentId: r.agent_id,
+      versionId: r.version_id,
+      version: r.version,
+      name: r.name,
+      roleTitle: r.role_title,
+      persona: r.persona,
+      instructions: r.instructions,
+      modelTier: r.model_tier,
+      tools: r.tools,
+      memoryScope: r.memory_scope,
+      autonomy: r.autonomy,
+      unattendedPolicy: r.unattended_policy,
+      budgetTokens: r.budget_tokens,
+      budgetSandboxMinutes: r.budget_sandbox_minutes,
+      skills: r.skills,
+      archived: r.archived,
+    };
+  }
+
+  /**
+   * The skills a turn may use, for the prompt's index (level 0): enabled, with
+   * an active version — of the agent's list, or all of the person's for the
+   * plain agent.
+   */
+  async skillIndex(client: pg.PoolClient, only: readonly string[] | null, limit: number): Promise<SkillIndexEntry[]> {
+    const { rows } = await client.query<{ name: string; description: string; content: string }>(
+      `SELECT s.name, v.description, v.content
+         FROM skills s JOIN skill_versions v ON v.id = s.current_version_id
+        WHERE s.enabled AND v.state = 'active' AND ($1::text[] IS NULL OR s.id::text = ANY ($1::text[]))
+        ORDER BY s.name
+        LIMIT $2`,
+      [only, limit],
+    );
+    return rows.map((r) => {
+      let triggers: string[] = [];
+      try {
+        triggers = parseSkill(r.content).meta.triggers;
+      } catch {
+        // A stored skill always parsed when it was kept; its triggers are only a hint here.
+      }
+      return { name: r.name, description: r.description, triggers };
+    });
+  }
+
   // ───────────────────────────────────────────────────────────────── messages
 
   async messages(client: pg.PoolClient, conversationId: string, limit = 500): Promise<MessageRow[]> {
@@ -271,8 +361,8 @@ export class AgentStore {
     const { rows } = await client.query<MessageRow>(
       `INSERT INTO agent_messages (organization_id, conversation_id, role, content, tool_calls, tool_call_id,
                                    tool_name, attachments, model, prompt_version, tokens_in, tokens_cached,
-                                   tokens_out, cost_usd, reasoning, revises)
-       VALUES ($1, $2, $3::agent_message_role, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                                   tokens_out, cost_usd, reasoning, revises, agent_version_id)
+       VALUES ($1, $2, $3::agent_message_role, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
        RETURNING ${MESSAGE}`,
       [
         principal.organizationId,
@@ -291,6 +381,7 @@ export class AgentStore {
         message.costUsd ?? null,
         message.reasoning || null,
         message.revises ?? null,
+        message.agentVersionId ?? null,
       ],
     );
     await client.query(`UPDATE agent_conversations SET last_message_at = now() WHERE id = $1`, [conversationId]);
@@ -379,6 +470,7 @@ export function conversationView(row: ConversationRow): AgentConversationSummary
     pinnedAt: row.pinned_at?.toISOString() ?? null,
     summarizedThrough: row.summary_through_id ?? null,
     summarizedAt: row.summarized_at?.toISOString() ?? null,
+    agentId: row.agent_id ?? null,
   };
 }
 
@@ -405,6 +497,7 @@ export function messageView(
     revises: row.revises ?? null,
     superseded: around.superseded ?? false,
     rating: around.rating ?? null,
+    agentVersionId: row.agent_version_id ?? null,
     createdAt: row.created_at.toISOString(),
   };
 }

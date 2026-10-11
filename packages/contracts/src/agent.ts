@@ -49,6 +49,8 @@ export const agentModelIdSchema = z
 export const agentConversationCreateSchema = z.object({
   title: z.string().trim().min(1).max(120).optional(),
   model: agentModelIdSchema.optional(),
+  /** One of the person's agents (Phase 4): its current version answers, on its tier's model. */
+  agentId: z.string().regex(/^[0-7][0-9A-HJKMNP-TV-Z]{25}$/).optional(),
 });
 export type AgentConversationCreate = z.infer<typeof agentConversationCreateSchema>;
 
@@ -171,6 +173,8 @@ export interface AgentConversationSummary {
    */
   summarizedThrough: string | null;
   summarizedAt: string | null;
+  /** The person's agent this conversation is with (Phase 4); null for the plain agent. */
+  agentId: string | null;
 }
 
 export interface AgentToolCallView {
@@ -199,6 +203,8 @@ export interface AgentMessageView {
   superseded: boolean;
   /** An agent's answer: the reader's own rating of it. */
   rating: 1 | -1 | null;
+  /** An agent's answer: the version of the person's agent that wrote it (Phase 4). */
+  agentVersionId: string | null;
   createdAt: string;
 }
 

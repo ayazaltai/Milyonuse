@@ -201,6 +201,10 @@ const BY_HINT: Record<string, { code: ErrorCode; message: string }> = {
     code: ErrorCode.CONFLICT,
     message: 'Replay evidence is never changed.',
   },
+  memory_scope_unknown: {
+    code: ErrorCode.VALIDATION_FAILED,
+    message: 'That memory names no agent of yours.',
+  },
 };
 
 const BY_CONSTRAINT: Record<string, { code: ErrorCode; message: string }> = {

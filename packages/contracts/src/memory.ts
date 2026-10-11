@@ -84,6 +84,8 @@ export interface MemoryItemView {
   reaffirmCount: number;
   /** An operator's T0: the organization's, not the person's. */
   operator: boolean;
+  /** Set when it is one agent's own memory (0011), not every agent's of the person's. */
+  agentId: string | null;
   stateReason: string | null;
   verdict: string | null;
   createdAt: string;

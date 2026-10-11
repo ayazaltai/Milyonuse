@@ -248,3 +248,33 @@ describe('replay evidence', () => {
     expect((forged as { code?: string }).code).toBe('23503');
   });
 });
+
+describe('an agent’s own memory (0011)', () => {
+  const hash = () => Array.from({ length: 64 }, () => '0123456789abcdef'[Math.floor(Math.random() * 16)]).join('');
+  const remember = (p: Person, scope: string, ref: string | null) =>
+    asTenant(app, p, (c) =>
+      c.query<{ id: string }>(
+        `INSERT INTO memory_items (organization_id, member_id, scope, scope_ref, content, tier, state, source_kind, actor, evidence_hash)
+         VALUES ($1, $2, $3, $4, 'Prefers primary sources', 'T2', 'pending', 'agent_observed', 'agent', $5) RETURNING id`,
+        [p.organizationId, p.memberId, scope, ref, hash()],
+      ),
+    ).catch((e: unknown) => e);
+
+  it('names one of the person’s own agents', async () => {
+    const own = await agent(ada);
+    const kept = (await remember(ada, 'agent', own.id)) as pg.QueryResult<{ id: string }>;
+    expect(kept.rows[0]!.id).toMatch(/^[0-9A-Z]{26}$/);
+  });
+
+  it('is refused for an agent that does not exist or is someone else’s', async () => {
+    expect(hintOf(await remember(ada, 'agent', '01ARZ3NDEKTSV4RRFFQ69G5FAV'))).toBe('memory_scope_unknown');
+    const theirs = await agent(grace);
+    expect(hintOf(await remember(ada, 'agent', theirs.id))).toBe('memory_scope_unknown');
+  });
+
+  it('needs its reference, and waits for teams', async () => {
+    expect(hintOf(await remember(ada, 'agent', null))).toBe('memory_scope_unknown');
+    const own = await agent(ada);
+    expect(hintOf(await remember(ada, 'team', own.id))).toBe('memory_scope_unknown');
+  });
+});

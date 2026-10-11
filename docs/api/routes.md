@@ -4,7 +4,7 @@
 > hand. Regenerate with `pnpm docs:routes`; the test suite fails when this file and the code
 > disagree.
 
-55 routes. Every path is served by `apps/api`; the web app reaches it through a
+73 routes. Every path is served by `apps/api`; the web app reaches it through a
 same-origin rewrite of `/api/v1`. Request and response shapes are the zod schemas in
 `packages/contracts`, and every error carries a machine-readable `code` (`errors.ts`).
 
@@ -79,6 +79,38 @@ A session with a membership and `agents.use`. A person’s own conversations: ev
 | PUT | `/api/v1/agent/messages/:messageId/feedback` | `agents.use` | `AgentController.feedback` |
 | GET | `/api/v1/agent/search` | `agents.use` | `AgentController.search` |
 
+## The agent studio — `/api/v1/agents`
+
+A session with a membership and `agents.use`. A person’s own agents (0010), from a template or from nothing. Changing what an agent is writes a new version — numbered by the database and never changed — and every answer names the version that wrote it; name, face and role title change in place. An agent is archived, never deleted. Anyone else’s agent is a 404.
+
+| Method | Path | Access | Handler |
+|---|---|---|---|
+| GET | `/api/v1/agents` | `agents.use` | `StudioController.list` |
+| POST | `/api/v1/agents` | `agents.use` · Idempotency-Key | `StudioController.create` |
+| GET | `/api/v1/agents/:agentId` | `agents.use` | `StudioController.get` |
+| PATCH | `/api/v1/agents/:agentId` | `agents.use` | `StudioController.update` |
+| POST | `/api/v1/agents/:agentId/archive` | `agents.use` | `StudioController.archive` |
+| POST | `/api/v1/agents/:agentId/restore` | `agents.use` | `StudioController.restore` |
+| GET | `/api/v1/agents/:agentId/versions` | `agents.use` | `StudioController.versions` |
+| GET | `/api/v1/agents/templates` | `agents.use` | `StudioController.templates` |
+| GET | `/api/v1/agents/tools` | `agents.use` | `StudioController.tools` |
+
+## Skills — `/api/v1/skills`
+
+A session with a membership and `agents.use`. A person’s skills (0010): the reviewed bundled ones, the ones they write and the ones their agents learn. Every version but a bundled one is scanned and staged; a danger verdict is final. A staged version becomes active only after a replay in the queue passes and the person approves it — the database refuses it otherwise — and falls with any source it was learned from.
+
+| Method | Path | Access | Handler |
+|---|---|---|---|
+| GET | `/api/v1/skills` | `agents.use` | `SkillsController.list` |
+| POST | `/api/v1/skills` | `agents.use` · 20 per min per member · Idempotency-Key | `SkillsController.write` |
+| GET | `/api/v1/skills/:skillId` | `agents.use` | `SkillsController.get` |
+| PATCH | `/api/v1/skills/:skillId` | `agents.use` | `SkillsController.update` |
+| POST | `/api/v1/skills/bundled` | `agents.use` · Idempotency-Key | `SkillsController.addBundled` |
+| GET | `/api/v1/skills/catalogue` | `agents.use` | `SkillsController.catalogue` |
+| POST | `/api/v1/skills/versions/:versionId/approve` | `agents.use` | `SkillsController.approve` |
+| POST | `/api/v1/skills/versions/:versionId/reject` | `agents.use` | `SkillsController.reject` |
+| POST | `/api/v1/skills/versions/:versionId/replay` | `agents.use` · 10 per min per member | `SkillsController.replay` |
+
 ## Verified memory — `/api/v1/memory`
 
 A session with a membership and `agents.use`. The person’s own memory, read and changed in their own scope (0007): what the agent remembers, why — provenance, evidence, ledger and derivations — and what the person decides: add in their own words, approve, reaffirm (once a day), forget, withdraw a source with everything built on it. Nothing here writes a memory past its checks.
@@ -147,6 +179,8 @@ Outside the version prefix and unauthenticated. `live` checks nothing external; 
 | POST | `/api/v1/agent/conversations/:conversationId/messages/stream` | A stream cannot be replayed; the plain messages route takes an Idempotency-Key. |
 | POST | `/api/v1/agent/conversations/:conversationId/stop` | Asking to stop again is the same request; nothing is created. |
 | PUT | `/api/v1/agent/messages/:messageId/feedback` | Rating again sets the same rating; nothing is created twice. |
+| POST | `/api/v1/agents/:agentId/archive` | Archiving sets a state; doing it twice leaves the same state. |
+| POST | `/api/v1/agents/:agentId/restore` | Restoring sets a state; doing it twice leaves the same state. |
 | POST | `/api/v1/auth/login` | Carries a password. |
 | POST | `/api/v1/auth/logout` | Signing out twice leaves the caller signed out once. |
 | POST | `/api/v1/auth/password/forgot` | Asking twice mails a fresh link, which replaces the last. |
@@ -163,3 +197,6 @@ Outside the version prefix and unauthenticated. `live` checks nothing external; 
 | POST | `/api/v1/memory/revocations` | Withdrawing a source again revokes nothing more. |
 | POST | `/api/v1/operator/memory/activate` | Authenticated by the signature itself; activating twice is refused by the lifecycle. |
 | POST | `/api/v1/operator/memory/stage` | Authenticated by the signature itself; a repeat stages a second claim the operator sees. |
+| POST | `/api/v1/skills/versions/:versionId/approve` | A version is approved once; the database refuses a second move from staging. |
+| POST | `/api/v1/skills/versions/:versionId/reject` | A version is rejected once; the database refuses a second move from staging. |
+| POST | `/api/v1/skills/versions/:versionId/replay` | A replay is queued once per attempt number; a repeat queues nothing new. |

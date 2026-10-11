@@ -46,7 +46,7 @@ import { UsageMeter } from '../usage/usage.meter.js';
 import { AGENT_MODEL, type AgentModel } from '../agent/agent-model.port.js';
 import { modelOptions, offeredModels } from '../agent/models.js';
 import { MEMORY_EMBEDDER } from './embedder.js';
-import { MemoryStore, type MemoryOwner, type MemoryRow, memoryView, trustOf } from './memory.store.js';
+import { MemoryStore, type MemoryOwner, type MemoryRow, lensOf, memoryView, trustOf } from './memory.store.js';
 
 /** What proposing a memory did, said to whoever proposed it. */
 export interface ProposalOutcome {
@@ -125,13 +125,13 @@ export class MemoryService {
 
     const setup = await this.store.run(principal, async (client) => {
       // Already known, word for word: nothing new to keep.
-      const known = (await this.store.active(client, { limit: 500 })).find(
+      const known = (await this.store.active(client, { limit: 500, lens: lensOf(principal) })).find(
         (m) => m.content.toLocaleLowerCase('tr') === content.toLocaleLowerCase('tr'),
       );
       if (known) return { known };
       // An outside claim seen again, from another source: that is a confirmation, not a new memory.
       if (derived.tier === 'T3') {
-        const claim = (await this.store.pendingClaims(client)).find(
+        const claim = (await this.store.pendingClaims(client, lensOf(principal))).find(
           (m) => jaccard(m.content, content) >= MEMORY_POLICY.rephraseJaccard,
         );
         if (claim) {
@@ -199,6 +199,8 @@ export class MemoryService {
           ceiling: MEMORY_POLICY.ceiling[derived.tier],
           embedding,
           embeddingModel: embedding ? this.embedder.model : null,
+          // What an agent with its own memory learns is its own; what the person says of themselves is theirs.
+          agentId: input.origin === 'agent' ? (principal.agentId ?? null) : null,
         });
         await this.store.derive(client, principal, created, {
           sourceUris: derived.derivedFrom,
@@ -221,7 +223,7 @@ export class MemoryService {
     const { item, negatives, existing, embedding } = await this.store.run(principal, async (client) => ({
       item: await this.store.get(client, id),
       negatives: await this.store.negatives(client),
-      existing: (await this.store.active(client, { limit: 50 })).map((m) => m.content),
+      existing: (await this.store.active(client, { limit: 50, lens: lensOf(principal) })).map((m) => m.content),
       embedding: await this.store.embeddingOf(client, id),
     }));
     if (item.state !== 'pending')
@@ -501,7 +503,7 @@ export class MemoryService {
       const now = new Date();
       const allowed = (r: MemoryRow) => r.member_id !== null && (!filter.tiers || filter.tiers.includes(r.tier));
       let candidates: { item: MemoryRow; similarity: number; trust: number }[] = embedding
-        ? (await this.store.nearest(client, embedding, this.embedder.model, overFetch(k))).filter(allowed).map((r) => ({
+        ? (await this.store.nearest(client, embedding, this.embedder.model, overFetch(k), lensOf(principal))).filter(allowed).map((r) => ({
             item: r,
             similarity: Number(r.similarity),
             trust: trustOf(r, now),
@@ -509,7 +511,7 @@ export class MemoryService {
         : [];
       if (candidates.length === 0) {
         const words = [...tokens(query)].slice(0, 12);
-        candidates = (await this.store.byWords(client, words, overFetch(k))).filter(allowed).map((r) => ({
+        candidates = (await this.store.byWords(client, words, overFetch(k), lensOf(principal))).filter(allowed).map((r) => ({
           item: r,
           similarity: jaccard(query, r.content) || 0.1,
           trust: trustOf(r, now),
@@ -532,8 +534,8 @@ export class MemoryService {
     try {
       const recalled = await this.recall(principal, query, 12);
       const { operator, profile } = await this.store.run(principal, async (client) => ({
-        operator: (await this.store.active(client, { tiers: ['T0'], limit: 50 })).filter((m) => m.member_id === null),
-        profile: await this.store.active(client, { tiers: ['T1'], limit: 8 }),
+        operator: (await this.store.active(client, { tiers: ['T0'], limit: 50, lens: null })).filter((m) => m.member_id === null),
+        profile: await this.store.active(client, { tiers: ['T1'], limit: 8, lens: null }),
       }));
       const now = new Date();
       const seen = new Set<string>();
