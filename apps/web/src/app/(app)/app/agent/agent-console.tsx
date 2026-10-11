@@ -1,9 +1,10 @@
 'use client';
 
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AGENT_MODES,
+  type AgentActionView,
   type AgentAttachmentView,
   type AgentCompaction,
   type AgentConversationSummary,
@@ -19,6 +20,7 @@ import {
 } from '@milyonuse/contracts';
 import { type Dictionary, getDictionary } from '@/i18n';
 import { request, stream, upload } from '@/lib/client-api';
+import { ActionCard, actionIdOf } from './action-card';
 import { type AgentView, DataCard, type LiveStep, StepsCard, ViewMenu, presentedOf, useAgentView } from './agent-cards';
 import { Composer, DeleteDialog, DetailsDialog, Mark, Menu, type MenuEntry, RenameDialog, When } from './agent-parts';
 import { MessageText } from './message-text';
@@ -115,6 +117,17 @@ export function AgentConsole({
   useEffect(() => setMounted(true), []);
   /** How the agent works, as this person last chose it in this browser. */
   const [mode, setMode] = useState<AgentMode>('ask');
+  /** An action proposed, run or changed — its card is replaced where it is, or added. */
+  const upsertAction = useCallback((action: AgentActionView) => {
+    setCurrent((c) => {
+      if (!c || c.conversation.id !== action.conversationId) return c;
+      const actions = c.actions;
+      return {
+        ...c,
+        actions: actions.some((x) => x.id === action.id) ? actions.map((x) => (x.id === action.id ? action : x)) : [...actions, action],
+      };
+    });
+  }, []);
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(MODE_KEY);
@@ -294,7 +307,7 @@ export function AgentConsole({
       setAlert(explain(result.error));
       return null;
     }
-    const fresh: AgentConversationView = { conversation: result.data, memory: null, messages: [], attachments: [] };
+    const fresh: AgentConversationView = { conversation: result.data, memory: null, messages: [], attachments: [], actions: [] };
     setConversations((list) => [result.data, ...list]);
     setCurrent(fresh);
     window.history.replaceState(null, '', `${PATH}?c=${result.data.id}`);
@@ -356,6 +369,8 @@ export function AgentConsole({
           setWritten((w) =>
             w && w.round === event.round ? { round: w.round, text: w.text + event.text } : { round: event.round, text: event.text },
           );
+        } else if (event.type === 'action') {
+          upsertAction(event.action);
         } else if (event.type === 'step') {
           setLive((l) => [...l.map((x) => ({ ...x, done: true })), { summary: event.summary, done: false }]);
         } else if (event.type === 'done') {
@@ -847,6 +862,8 @@ export function AgentConsole({
                         message={m}
                         view={view}
                         onView={changeView}
+                        actions={current!.actions}
+                        onAction={upsertAction}
                         {...(!part.earlier && waiting === null
                           ? {
                               onEdit: m.role === 'user' ? (text: string) => send(text, m.id) : undefined,
@@ -869,6 +886,16 @@ export function AgentConsole({
                     part.messages.map(render)
                   );
                 })}
+                {current!.actions
+                  .filter((x) => !current!.messages.some((m) => m.role === 'tool' && actionIdOf(m.content) === x.id))
+                  .map((x) => (
+                    <div key={x.id} className="agent-turn-agent">
+                      <span />
+                      <div className="agent-turn-body">
+                        <ActionCard locale={locale} action={x} onChange={upsertAction} />
+                      </div>
+                    </div>
+                  ))}
                 {waiting && (
                   <>
                     {!echoed && (
@@ -972,6 +999,8 @@ function Message({
   onRate,
   view,
   onView,
+  actions,
+  onAction,
 }: {
   locale: Locale;
   message: AgentMessageView;
@@ -983,6 +1012,9 @@ function Message({
   onRate?: ((messageId: string, rating: 1 | -1, note: string) => Promise<boolean>) | undefined;
   view: AgentView;
   onView: (change: Partial<AgentView>) => void;
+  /** The conversation's actions, for a tool answer that names one. */
+  actions: AgentActionView[];
+  onAction: (action: AgentActionView) => void;
 }) {
   const a = getDictionary(locale).app.agent;
   const [editing, setEditing] = useState<string | null>(null);
@@ -1052,6 +1084,18 @@ function Message({
     );
   }
   if (message.role === 'tool') {
+    const actionId = actionIdOf(message.content);
+    const action = actionId ? actions.find((x) => x.id === actionId) : undefined;
+    if (action) {
+      return (
+        <div className="agent-turn-agent">
+          <span />
+          <div className="agent-turn-body">
+            <ActionCard locale={locale} action={action} onChange={onAction} />
+          </div>
+        </div>
+      );
+    }
     const data = presentedOf(message);
     if (data && !view.pinned.includes(message.id)) {
       return (

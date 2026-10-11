@@ -25,6 +25,11 @@ const ULID = '[0-7][0-9A-HJKMNP-TV-Z]{25}';
  *   "remember …" / "hatırla …"    → memory_propose
  *   "what do you remember about…" → memory_search
  *   "time" / "saat"               → current_time
+ *   "run python: …" / "run node: …" → code_run (a card in ask mode)
+ *   "make a csv/xlsx/md file …"   → file_create
+ *   "read https://…"              → web_fetch
+ *   "search the web for …"        → web_search
+ *   "email a@b.c: subject | body" → email_send (always a card)
  *   anything else                 → says what it understands
  *
  * Refuses to construct in production: an agent that pattern-matches must
@@ -66,6 +71,22 @@ export class DevelopmentAgentModel implements AgentModel {
     if (remember) return this.call('memory_propose', { content: remember[1]!.replace(/[.!]+$/, '') });
     const recall = /(?:what do you (?:remember|know) about|ne hatırlıyorsun|hakkında ne biliyorsun)\s*(.*)$/iu.exec(text.trim());
     if (recall) return this.call('memory_search', { query: recall[1]?.replace(/[?.!]+$/, '').trim() || text });
+    const code = /^run (python|node)\s*:\s*([\s\S]+)$/i.exec(text.trim());
+    if (code) return this.call('code_run', { language: code[1]!.toLowerCase(), code: code[2]!, purpose: 'what you asked' });
+    const file = /\bmake an? (csv|xlsx|md|txt|docx) file\b(?: called ([\w.-]+))?/i.exec(text);
+    if (file) {
+      const format = file[1]!.toLowerCase();
+      const name = file[2] ?? 'example';
+      return format === 'csv' || format === 'xlsx'
+        ? this.call('file_create', { name, format, rows: [['Item', 'Count'], ['Apples', '3'], ['Pears', '5']] })
+        : this.call('file_create', { name, format, content: `# ${name}\n\n- One\n- Two\n` });
+    }
+    const url = /\bread (https?:\/\/\S+)/i.exec(text);
+    if (url) return this.call('web_fetch', { url: url[1]!.replace(/[).,]+$/, '') });
+    const search = /\bsearch the web for (.{2,})$/i.exec(text.trim());
+    if (search) return this.call('web_search', { query: search[1]!.replace(/[?.!]+$/, '') });
+    const mail = /^email ([^\s:]+@[^\s:]+)\s*:\s*([^|]+)\|([\s\S]+)$/i.exec(text.trim());
+    if (mail) return this.call('email_send', { to: [mail[1]!], subject: mail[2]!.trim(), body: mail[3]!.trim() });
     if (/\b(time|saat|date|tarih)\b/.test(lower)) return this.call('current_time', {});
 
     return this.answer(
@@ -74,6 +95,10 @@ export class DevelopmentAgentModel implements AgentModel {
         '- Attach a document (PDF, Word, text) — I read its opening\n' +
         '- “Remember that …” — I propose it to memory, and say whether it was kept\n' +
         '- “What do you remember about …”\n' +
+        '- “Run python: print(1+1)” — code in the sandbox, after you confirm\n' +
+        '- “Make a csv file called fruit” — a file to download\n' +
+        '- “Read https://…” or “Search the web for …”\n' +
+        '- “Email someone@example.com: Subject | Body” — sent only if you confirm\n' +
         '- Ask for the time',
     );
   }
@@ -118,6 +143,23 @@ export class DevelopmentAgentModel implements AgentModel {
       return this.answer(
         `${NOTE}\n\n${results.length === 0 ? 'I remember nothing about that.' : results.map((r) => `- [${r.tier} ${r.trust}] ${r.content}`).join('\n')}`,
       );
+    }
+    if (value['proposed'] === true) {
+      return this.answer(`${NOTE}\n\n“${String(value['title'] ?? 'This')}” waits for you on the card above: nothing is done until you confirm it.`);
+    }
+    if (typeof value['actionId'] === 'string') {
+      return this.answer(`${NOTE}\n\n${value['status'] === 'completed' ? 'Done, and recorded on its card.' : `That did not work: ${String(value['error'] ?? '')}`}`);
+    }
+    if (answer.name === 'file_create' && value['file']) {
+      const file = value['file'] as { name: string; url: string };
+      return this.answer(`${NOTE}\n\nHere it is: [${file.name}](${file.url}).`);
+    }
+    if ((answer.name === 'web_fetch' || answer.name === 'web_search') && isSourceAnswer(parsed)) {
+      const result = parsed.result as { title?: string; text?: string; results?: { title: string; url: string }[] };
+      const said = result.results
+        ? result.results.map((r) => `- [${r.title}](${r.url})`).join('\n') || 'Nothing found.'
+        : `“${result.title ?? 'The page'}” opens: ${(result.text ?? '').replace(/\s+/g, ' ').slice(0, 280)}`;
+      return this.answer(`${NOTE}\n\n${said}`);
     }
     if (answer.name === 'current_time' && typeof value['local'] === 'string') {
       return this.answer(`${NOTE}\n\nIt is ${value['local']}.`);

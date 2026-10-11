@@ -62,7 +62,7 @@ export function Sidebar({ me, locale }: { me: Me; locale: Locale }) {
       label: n.groupRun,
       items: [
         { href: '/app/automations', label: n.automations, Icon: Workflow, soon: true },
-        { href: '/app/connections', label: n.connections, Icon: Link2, soon: true },
+        { href: '/app/connections', label: n.connections, Icon: Link2 },
       ],
     },
     {

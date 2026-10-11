@@ -3612,3 +3612,70 @@ body {
     animation: none;
   }
 }
+
+/* ─────────────────────────────────────────────── actions (F3): the card a person confirms */
+.agent-action {
+  border: 1px solid var(--w-14);
+  border-radius: 16px;
+  background: var(--w-03);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+  animation: agent-fade 0.35s var(--ease) both;
+}
+.agent-action[data-status='proposed'] { border-color: var(--brand-500); }
+.agent-action[data-risk='danger'][data-status='proposed'] { border-color: var(--review); }
+.agent-action[data-status='discarded'],
+.agent-action[data-status='expired'] { opacity: 0.6; }
+.agent-action-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 14px 16px 6px; }
+.agent-action-title { margin: 0; font-size: 14.5px; font-weight: 500; color: var(--fg); }
+.agent-action-sub { margin: 3px 0 0; font-size: 12.5px; font-style: italic; font-weight: 300; color: var(--w-50); }
+.agent-action-fields { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; padding: 6px 16px 10px; font-size: 13px; }
+.agent-action-fields dt { color: var(--w-50); }
+.agent-action-fields dd { margin: 0; color: var(--w-80); overflow-wrap: anywhere; }
+.agent-action-body {
+  margin: 0 16px 10px;
+  padding: 10px 12px;
+  max-height: 260px;
+  overflow: auto;
+  border-radius: 10px;
+  background: var(--w-06);
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--w-80);
+}
+.agent-action-warning { margin: 0 16px 10px; font-size: 12.5px; color: var(--review); }
+.agent-action-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--w-08);
+}
+.agent-action-note { font-size: 12.5px; color: var(--w-50); }
+.agent-action-note[data-tone='pass'] { color: var(--pass); }
+.agent-action-note[data-tone='danger'] { color: var(--danger); }
+.agent-action-buttons { display: flex; gap: 8px; }
+.agent-action-progress { height: 4px; margin: 0 16px 10px; border-radius: 999px; background: var(--w-08); overflow: hidden; }
+.agent-action-progress > span { display: block; height: 100%; background: var(--brand-500); transition: width 0.3s var(--ease); }
+.agent-action-files { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 10px; }
+
+/* ─────────────────────────────────────────────── connections (F3): app cards */
+.app-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.app-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--w-10);
+  border-radius: 16px;
+  background: var(--w-03);
+}
+.app-card[data-connected] { border-color: var(--brand-500); }
+.app-card-name { margin: 0; font-size: 15px; font-weight: 500; }
+.app-card-text { margin: 0; font-size: 13px; line-height: 1.55; color: var(--w-60); flex: 1; }
+.app-card-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.app-tools { display: flex; flex-wrap: wrap; gap: 6px; }

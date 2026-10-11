@@ -120,7 +120,7 @@ milyonuse/
 | `run_taint` | run → okunan dış kaynaklar |
 
 **F3 — Araçlar ve eylemler**
-`agent_actions` (öneri durum makinesi, tetikleyicilerle), `agent_action_items`, `connections` (MCP / OAuth; sırlar şifreli), `sandbox_sessions`
+`agent_actions` (öneri durum makinesi, tetikleyicilerle), `agent_action_items` (dilim; `uncertain` asla tekrar çalışmaz), `connections` + `connection_secrets` (MCP / OAuth; AES-256-GCM, kesilince silinir) + `connection_oauth_states` (10 dk, tek kullanım), `sandbox_sessions`, `agent_files` — `0009_actions`
 
 **F4 — Stüdyo ve skills**
 `agents` (persona, talimatlar, model kademesi, tool izin listesi, hafıza kapsamı, autonomy), `agent_versions` (değişmez anlık görüntü), `skills`, `skill_versions` (staging → active), `skill_runs` (replay kanıtı)

@@ -140,3 +140,13 @@ Biçim: **Karar · Gerekçe · Sonuç · Durum**
   - Bakım saatliktir. CI'da kural doğrulayıcı çalışır; production'da varsayılan, kurallardan sonra Fast model.
   - PoisonBench'in held-out ifadeleri için tarayıcıya kalıp yazılmaz; yalnızca kategori düzeyinde genelleme yapılır ve raporlanır.
 - **Durum:** Kabul (F2, 2026-10-11).
+
+### D-19 — Eylemlerin uygulama kararları (F3)
+- **Karar:**
+  - Turun kendisi `safe` olmayan hiçbir aracı çalıştırmaz. Mod izin verse bile böyle bir çağrı önce `agent_actions` satırı olur (`auto_confirmed`), aynı onay yolundan geçer ve geri alınabilir kalır.
+  - Bir aracın adı riskini yalnızca artırabilir. Bir MCP sunucusunun "salt okunur" iddiası ancak adı bir okuma fiili taşıyorsa kabul edilir.
+  - Onay her şeyi o anki haliyle yeniden kontrol eder; bağlantı kesildiyse öneri başarısız olur, başka bir bağlantıya kaymaz.
+  - Yarıda kalan bir öğe `uncertain` olur ve asla tekrar çalışmaz. Kuralı veritabanı uygular.
+  - Bağlantı sırları AES-256-GCM ile, bağlantı kimliği AAD olarak şifrelenir. Bağlantıyı kesmek sırları veritabanı tetikleyicisiyle siler.
+  - `SANDBOX_PROVIDER=local` yalnızca geliştirme içindir; üretimde env reddeder.
+- **Durum:** Kabul (F3, 2026-10-11).

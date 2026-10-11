@@ -2,7 +2,7 @@
 
 **Amaç:** Agent dünyada iş yapar: araştırır, web'i okur, kod çalıştırır, dosya üretir, bağlı servisleri (Gmail, Takvim, Notion, Milyonus…) kullanır. Riskli her şey öneri kartından geçer.
 
-**Bağımlılık:** F2 · **Kaynak:** App-Milyonus proposal sistemi + Agent 5.5 `security/*`, `tools/*`, `research/*`, `tools/mcp/*`
+**Bağımlılık:** F2 · **Kaynak:** App-Milyonus proposal sistemi + Agent 5.5 `security/*`, `tools/*`, `research/*`, `tools/mcp/*` · **Durum:** ✅ tamamlandı — [teslim raporu](../delivered/F3-delivered.md) (şartnameden sapmalar §6'da)
 
 ---
 
