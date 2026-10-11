@@ -168,6 +168,39 @@ const BY_HINT: Record<string, { code: ErrorCode; message: string }> = {
     code: ErrorCode.CONFLICT,
     message: 'A finished sandbox run is a record and does not change.',
   },
+  // 0010 studio and skills
+  agent_version_immutable: {
+    code: ErrorCode.CONFLICT,
+    message: 'An agent version is a snapshot; edit the agent to make a new one.',
+  },
+  agent_version_foreign: {
+    code: ErrorCode.CONFLICT,
+    message: 'An agent’s current version must be one of its own.',
+  },
+  skill_replay_required: {
+    code: ErrorCode.CONFLICT,
+    message: 'A skill becomes active only after its replay passes.',
+  },
+  skill_approval_required: {
+    code: ErrorCode.CONFLICT,
+    message: 'A skill becomes active on your approval.',
+  },
+  skill_danger: {
+    code: ErrorCode.CONFLICT,
+    message: 'This skill contains something dangerous and can never be active.',
+  },
+  skill_transition_invalid: {
+    code: ErrorCode.CONFLICT,
+    message: 'That skill version cannot move to that state.',
+  },
+  skill_version_immutable: {
+    code: ErrorCode.CONFLICT,
+    message: 'What a skill version says, and where it came from, does not change.',
+  },
+  skill_run_immutable: {
+    code: ErrorCode.CONFLICT,
+    message: 'Replay evidence is never changed.',
+  },
 };
 
 const BY_CONSTRAINT: Record<string, { code: ErrorCode; message: string }> = {

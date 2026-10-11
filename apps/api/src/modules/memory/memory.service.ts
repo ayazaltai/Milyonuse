@@ -424,9 +424,11 @@ export class MemoryService {
   }
 
   /** A source withdrawn: every memory from it and built on it falls, in one statement. */
-  async revokeSource(principal: MemoryOwner, sourceUri: string, reason: string): Promise<{ revoked: string[] }> {
+  async revokeSource(principal: MemoryOwner, sourceUri: string, reason: string): Promise<{ revoked: string[]; skills: string[] }> {
     return this.store.run(principal, async (client) => ({
       revoked: await this.store.revoke(client, sourceUri, null, reason),
+      // What an agent learned to do from the source goes with what it learned to know.
+      skills: await this.store.revokeSkillsFrom(client, sourceUri, reason),
     }));
   }
 

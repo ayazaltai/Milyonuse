@@ -426,6 +426,20 @@ export class MemoryStore {
     return rows.map((r) => r.id);
   }
 
+  /**
+   * Skills learned from a source fall with it (F4, acceptance 3): every staged
+   * or active skill version a turn derived from it is revoked in the same
+   * transaction as the memory.
+   */
+  async revokeSkillsFrom(client: pg.PoolClient, sourceUri: string, reason: string): Promise<string[]> {
+    const { rows } = await client.query<{ id: string }>(
+      `UPDATE skill_versions SET state = 'revoked', state_reason = $2
+        WHERE state IN ('staging', 'active') AND $1 = ANY (derived_from) RETURNING id`,
+      [sourceUri, reason.slice(0, 500)],
+    );
+    return rows.map((r) => r.id);
+  }
+
   // ─────────────────────────────────────────────────────────── taint
 
   async recordTaint(

@@ -93,7 +93,7 @@ export class MemoryController {
   async revoke(
     @CurrentPrincipal() principal: Principal,
     @Body() body: unknown,
-  ): Promise<{ revoked: string[] }> {
+  ): Promise<{ revoked: string[]; skills: string[] }> {
     const input = memoryRevokeSourceSchema.parse(body);
     return this.memory.revokeSource(principal, input.sourceUri, input.reason);
   }
