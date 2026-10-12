@@ -293,6 +293,14 @@ export function translateDatabaseError(error: unknown): AppError | null {
   return null;
 }
 
+/** The HINT a database refusal carries — on the error itself, or on the one an AppError translated. */
+export function hintOf(error: unknown): string | null {
+  for (let e = error as { hint?: unknown; cause?: unknown } | null, depth = 0; e && typeof e === 'object' && depth < 3; e = e.cause as typeof e, depth++) {
+    if (typeof e.hint === 'string') return e.hint;
+  }
+  return null;
+}
+
 /** Rethrows a database rule violation as an AppError, or the original error. */
 export function rethrowDatabaseError(error: unknown): never {
   throw translateDatabaseError(error) ?? error;

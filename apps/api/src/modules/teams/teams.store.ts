@@ -53,6 +53,11 @@ export interface RunRow {
   id: string;
   parent_run_id: string | null;
   team_id: string | null;
+  /** A solo run's agent (an automation's target). */
+  agent_id: string | null;
+  automation_id: string | null;
+  /** The policy an automation runs it under; the agents' own when null. */
+  unattended_policy: 'safe_only' | 'trusted' | null;
   conversation_id: string;
   goal: string;
   mode: TeamMode | null;
@@ -112,7 +117,7 @@ export interface NewTask {
 const TEAM = `t.id, t.name, t.purpose, t.mode::text AS mode, t.budget_tokens, t.template, t.archived_at, t.created_at, t.updated_at,
   (SELECT count(*)::int FROM runs r WHERE r.team_id = t.id AND r.parent_run_id IS NULL) AS runs,
   (SELECT max(r.created_at) FROM runs r WHERE r.team_id = t.id) AS last_run_at`;
-const RUN = `r.id, r.parent_run_id, r.team_id, r.conversation_id, r.goal, r.mode::text AS mode, r.status::text AS status, r.depth,
+const RUN = `r.id, r.parent_run_id, r.team_id, r.agent_id, r.automation_id, r.unattended_policy, r.conversation_id, r.goal, r.mode::text AS mode, r.status::text AS status, r.depth,
   r.budget_tokens, r.spent_tokens::text AS spent_tokens, r.revisions, r.result, r.error, r.lease_until, r.created_at, r.finished_at`;
 const TASK = `k.id, k.run_id, k.key, k.title, k.goal, k.context, k.success_criteria, k.depends_on, k.assigned_agent_id,
   k.status::text AS status, k.attempts, k.output, k.error, k.tokens, k.started_at, k.finished_at`;
@@ -210,12 +215,32 @@ export class TeamsStore {
   async createRun(
     client: pg.PoolClient,
     owner: Owner,
-    run: { teamId: string; conversationId: string; goal: string; mode: TeamMode; budgetTokens: number },
+    run: {
+      teamId: string | null;
+      agentId?: string | null;
+      conversationId: string;
+      goal: string;
+      mode: TeamMode | null;
+      budgetTokens: number;
+      automationId?: string | null;
+      policy?: 'safe_only' | 'trusted' | null;
+    },
   ): Promise<string> {
     const { rows } = await client.query<{ id: string }>(
-      `INSERT INTO runs (organization_id, member_id, team_id, conversation_id, goal, mode, budget_tokens)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-      [owner.organizationId, owner.memberId, run.teamId, run.conversationId, run.goal, run.mode, run.budgetTokens],
+      `INSERT INTO runs (organization_id, member_id, team_id, agent_id, conversation_id, goal, mode, budget_tokens, automation_id, unattended_policy)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+      [
+        owner.organizationId,
+        owner.memberId,
+        run.teamId,
+        run.agentId ?? null,
+        run.conversationId,
+        run.goal,
+        run.mode,
+        run.budgetTokens,
+        run.automationId ?? null,
+        run.policy ?? null,
+      ],
     );
     return rows[0]!.id;
   }
@@ -226,11 +251,16 @@ export class TeamsStore {
     return rows[0];
   }
 
-  async runs(client: pg.PoolClient, filter: { teamId?: string | undefined }, limit = 50): Promise<RunRow[]> {
+  async runs(
+    client: pg.PoolClient,
+    filter: { teamId?: string | undefined; automationId?: string | undefined; status?: string | undefined },
+    limit = 50,
+  ): Promise<RunRow[]> {
     const { rows } = await client.query<RunRow>(
       `SELECT ${RUN} FROM runs r WHERE r.parent_run_id IS NULL AND ($1::text IS NULL OR r.team_id::text = $1)
+          AND ($3::text IS NULL OR r.automation_id::text = $3) AND ($4::text IS NULL OR r.status::text = $4)
         ORDER BY r.created_at DESC LIMIT $2`,
-      [filter.teamId ?? null, limit],
+      [filter.teamId ?? null, limit, filter.automationId ?? null, filter.status ?? null],
     );
     return rows;
   }
@@ -445,6 +475,8 @@ export function runSummary(row: RunRow): RunSummaryView {
   return {
     id: row.id,
     teamId: row.team_id,
+    agentId: row.agent_id,
+    automationId: row.automation_id,
     conversationId: row.conversation_id,
     goal: row.goal,
     mode: row.mode,

@@ -21,6 +21,11 @@ import { IdempotencyExempt, Idempotent } from '../tenancy/idempotency.js';
 import { TeamsService } from './teams.service.js';
 
 const listQuery = z.object({ archived: z.enum(['true', 'false']).optional() });
+const runsQuery = z.object({
+  teamId: ulidSchema.optional(),
+  automationId: ulidSchema.optional(),
+  status: z.enum(['queued', 'running', 'waiting_approval', 'completed', 'failed', 'cancelled']).optional(),
+});
 const localeQuery = z.object({ locale: z.enum(['en', 'tr']).default('en') });
 
 /** A person's teams. Another person's team is a 404 — the policies name the member (0012). */
@@ -91,9 +96,11 @@ export class TeamsController {
 export class RunsController {
   constructor(private readonly teams: TeamsService) {}
 
+  /** Every run — a team's, an agent's, an automation's — newest first, filtered. */
   @Get()
-  async list(@CurrentPrincipal() principal: Principal): Promise<{ items: RunSummaryView[] }> {
-    return { items: await this.teams.runs(principal) };
+  async list(@CurrentPrincipal() principal: Principal, @Query() query: unknown): Promise<{ items: RunSummaryView[] }> {
+    const { teamId, ...filter } = runsQuery.parse(query ?? {});
+    return { items: await this.teams.runs(principal, teamId, filter) };
   }
 
   @Get(':runId')

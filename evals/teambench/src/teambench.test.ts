@@ -10,6 +10,8 @@ function goodRun(id: string): RunView {
   return {
     id: 'r',
     teamId: 't',
+    agentId: null,
+    automationId: null,
     conversationId: 'c',
     goal: bench.goal,
     mode: bench.mode,

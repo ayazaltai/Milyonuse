@@ -4,6 +4,7 @@ import type pg from 'pg';
 import { describe, expect, it } from 'vitest';
 import { AppLogger } from '../../common/logging/logger.js';
 import { loadEnv, type Env } from '../../config/env.js';
+import { AutomationScheduler } from '../automations/scheduler.js';
 import { OperationsWorker } from '../observability/operations.worker.js';
 import { JobWorker } from '../queue/job.worker.js';
 import { CronController } from './cron.controller.js';
@@ -25,6 +26,13 @@ function fakes(options: { jobBatches?: number[]; failJobs?: boolean } = {}) {
   const calls: string[] = [];
   const jobBatches = [...(options.jobBatches ?? [2, 1, 0])];
   const byType = new Map<unknown, unknown>([
+    [
+      AutomationScheduler,
+      {
+        tick: async () => (calls.push('automations'), { due: 0 }),
+        suggest: async () => (calls.push('suggestions'), 0),
+      },
+    ],
     [
       JobWorker,
       {
@@ -68,7 +76,7 @@ describe('CronService', () => {
     const { calls, modules } = fakes();
     const result = await service(modules).run('minute');
 
-    expect(calls).toEqual(['jobs', 'jobs', 'jobs', 'alerts']);
+    expect(calls).toEqual(['automations', 'jobs', 'jobs', 'jobs', 'alerts']);
     expect(result.ran).toMatchObject({ jobs: 3 });
     expect(result.failed).toEqual({});
   });
@@ -103,7 +111,7 @@ describe('CronService', () => {
 
     const hour = fakes();
     await service(hour.modules).run('hour');
-    expect(hour.calls).toEqual(['purge', 'selfProbe']);
+    expect(hour.calls).toEqual(['purge', 'suggestions', 'selfProbe']);
   });
 });
 

@@ -5,6 +5,7 @@ import { AppLogger } from '../../common/logging/logger.js';
 import { ENV } from '../../config/config.module.js';
 import type { Env } from '../../config/env.js';
 import { PLATFORM_POOL } from '../../database/database.module.js';
+import { AutomationScheduler } from '../automations/scheduler.js';
 import { RunEngine } from '../teams/run-engine.js';
 import { ActionService } from '../agent/actions/action.service.js';
 import { MemoryWorker } from '../memory/memory.worker.js';
@@ -35,7 +36,7 @@ export interface PassResult {
  * The same passes the intervals run, awaited end to end, because on a host
  * that freezes an idle process nothing may outlive the request:
  *
- *   minute        the job queue, then the error digest — last, so an error
+ *   minute        automations that fell due, the job queue, then the error digest — last, so an error
  *                 from any step before it is in the mail it sends
  *   quarter-hour  the job queue (agent schedules join it in Phase 6)
  *   hour          upkeep of every table that only grows, memory consolidation,
@@ -78,6 +79,8 @@ export class CronService {
       this.drain(() => get(JobWorker).drain(this.env.JOBS_CONCURRENCY), within);
 
     if (cadence === 'minute') {
+      // Automations first: what falls due is queued, and the job step after it starts it.
+      await step('automations', () => get(AutomationScheduler).tick());
       await step('jobs', jobs);
       await step('alerts', () => get(OperationsWorker).digest());
     } else if (cadence === 'quarter-hour') {
@@ -87,6 +90,7 @@ export class CronService {
       await step('memory', () => get(MemoryWorker).consolidate());
       await step('actions', () => get(ActionService).sweep());
       await step('teams', () => get(RunEngine).sweep());
+      await step('suggestions', () => get(AutomationScheduler).suggest());
       await step('selfProbe', () => get(OperationsWorker).probe());
     }
 

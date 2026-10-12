@@ -158,10 +158,14 @@ export class TeamsService {
 
   // ──────────────────────────────────────────────────────────────── runs
 
-  async runs(principal: Principal, teamId?: string): Promise<RunSummaryView[]> {
+  async runs(
+    principal: Principal,
+    teamId?: string,
+    filter: { automationId?: string | undefined; status?: string | undefined } = {},
+  ): Promise<RunSummaryView[]> {
     return this.store.run(principal, async (client) => {
       if (teamId) await this.store.team(client, teamId);
-      return (await this.store.runs(client, { teamId })).map(runSummary);
+      return (await this.store.runs(client, { teamId, ...filter }, 100)).map(runSummary);
     });
   }
 
@@ -169,8 +173,13 @@ export class TeamsService {
     return this.store.run(principal, (client) => this.runIn(client, id));
   }
 
-  /** A run on a goal: its conversation with the lead, its first slice queued. */
-  async start(principal: Principal, teamId: string, input: RunStart): Promise<RunView> {
+  /** A run on a goal: its conversation with the lead, its first slice queued. An automation's run carries its automation and policy. */
+  async start(
+    principal: Principal,
+    teamId: string,
+    input: RunStart,
+    from: { automationId: string; policy: 'safe_only' | 'trusted'; title: string } | null = null,
+  ): Promise<RunView> {
     const id = await this.store.run(principal, async (client) => {
       const team = await this.store.team(client, teamId);
       if (team.archived_at) throw new AppError(ErrorCode.CONFLICT, 'Restore this team before giving it work.');
@@ -182,7 +191,7 @@ export class TeamsService {
       }
       const profile = await this.agents.agentProfile(client, lead.agent_id);
       const conversation = await this.agents.createConversation(client, principal, {
-        title: `${team.name}: ${input.goal.replace(/\s+/g, ' ').slice(0, 80)}`.slice(0, 120),
+        title: (from?.title ?? `${team.name}: ${input.goal.replace(/\s+/g, ' ').slice(0, 80)}`).slice(0, 120),
         model: modelFor(this.offered, profile.modelTier, this.env.AGENT_MODEL),
         agentId: lead.agent_id,
         teamId,
@@ -195,8 +204,13 @@ export class TeamsService {
           goal: input.goal,
           mode: team.mode as TeamMode,
           budgetTokens: input.budgetTokens ?? team.budget_tokens,
+          automationId: from?.automationId ?? null,
+          policy: from?.policy ?? null,
         });
-        await this.store.step(client, principal, runId, { kind: 'note', summary: `Started on “${input.goal.slice(0, 200)}”` });
+        await this.store.step(client, principal, runId, {
+          kind: 'note',
+          summary: from ? `Started by the automation “${from.title.slice(0, 120)}”` : `Started on “${input.goal.slice(0, 200)}”`,
+        });
         await this.engine.queue(client, principal, runId);
         await this.note(client, principal, 'team.run_started', teamId, { runId });
         return runId;

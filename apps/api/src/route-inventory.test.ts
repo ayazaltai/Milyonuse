@@ -96,13 +96,42 @@ const SURFACES: Record<string, Surface> = {
     mayBeUnguarded: false,
   },
   runs: {
-    title: 'Team runs',
+    title: 'Runs',
     note:
-      'A session with a membership and `agents.use`. A run’s task graph, its append-only steps and its result ' +
+      'A session with a membership and `agents.use`. Every run — a team’s, an agent’s, an automation’s — ' +
+      'filtered by team, automation or state. A run’s task graph, its append-only steps and its result ' +
       '(0012), and the person’s word on it: stop it, add budget to a run waiting for them, or run a failed or ' +
       'interrupted task again as a new attempt. A finished run is sealed; anything a run would change outside ' +
       'is a card on its conversation, never done on a member’s word.',
     mayBeUnguarded: false,
+  },
+  automations: {
+    title: 'Automations',
+    note:
+      'A session with a membership and `agents.use`. A person’s own automations (0013): what starts them — a ' +
+      'schedule, a page that changed, a goal, a signed webhook, a mail, another run ending, or the person — and ' +
+      'which of their agents or teams they run. The next run is computed in SQL across daylight-saving changes; ' +
+      'one event starts one run; chains are at most three deep and never loop; three failures in a row pause ' +
+      'one. Unattended, only safe work runs; `trusted` needs the person’s confirmation, and anything else is a ' +
+      'card in the Inbox. A draft reads words into a configuration and makes nothing.',
+    mayBeUnguarded: false,
+  },
+  inbox: {
+    title: 'The Inbox',
+    note:
+      'A session with a membership and `agents.use`. Everything waiting for the person: proposals, runs ' +
+      'waiting at their budget, memories waiting for approval, and the automations’ alerts, notices and ' +
+      'suggestions. Proposals confirmed together each go through the same confirmation as one alone.',
+    mayBeUnguarded: false,
+  },
+  hooks: {
+    title: 'Events from outside',
+    note:
+      'Public, because a sender has no session. A webhook is authenticated by its HMAC-SHA256 signature over ' +
+      '`<timestamp>.<body>`, keyed by a secret derived from its address and stored nowhere, within five ' +
+      'minutes; forwarded mail by the inbound provider’s bearer (`INBOUND_MAIL_SECRET`). The same delivery ' +
+      'twice is accepted once. What arrives is a third party’s word: fenced as data, and the run is tainted by it.',
+    mayBeUnguarded: true,
   },
   memory: {
     title: 'Verified memory',

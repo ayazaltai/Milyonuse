@@ -9,3 +9,4 @@ export * from './memory.js';
 export * from './actions.js';
 export * from './studio.js';
 export * from './teams.js';
+export * from './automations.js';

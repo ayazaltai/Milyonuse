@@ -150,6 +150,10 @@ export interface RunStepView {
 export interface RunSummaryView {
   id: string;
   teamId: string | null;
+  /** A solo run's agent — an automation that targets one agent. */
+  agentId: string | null;
+  /** The automation that started it, if one did. */
+  automationId: string | null;
   conversationId: string;
   goal: string;
   mode: TeamMode | null;

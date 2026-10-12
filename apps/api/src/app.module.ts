@@ -13,6 +13,7 @@ import { ObservabilityModule } from './modules/observability/observability.modul
 import { QueueModule } from './modules/queue/queue.module.js';
 import { StudioModule } from './modules/studio/studio.module.js';
 import { TeamsModule } from './modules/teams/teams.module.js';
+import { AutomationsModule } from './modules/automations/automations.module.js';
 import { TenancyModule } from './modules/tenancy/tenancy.module.js';
 import { ToolsModule } from './modules/tools/tools.module.js';
 import { UsageModule } from './modules/usage/usage.module.js';
@@ -41,6 +42,7 @@ import { UsageModule } from './modules/usage/usage.module.js';
     ConnectionsModule,
     StudioModule,
     TeamsModule,
+    AutomationsModule,
     CronModule,
     HealthModule,
   ],

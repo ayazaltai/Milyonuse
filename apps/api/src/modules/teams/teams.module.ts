@@ -3,6 +3,7 @@ import { AgentModule } from '../agent/agent.module.js';
 import { MemoryModule } from '../memory/memory.module.js';
 import { StudioModule } from '../studio/studio.module.js';
 import { RunEngine } from './run-engine.js';
+import { RunHooks } from './run-hooks.js';
 import { RunsController, TeamsController } from './teams.controller.js';
 import { TeamsService } from './teams.service.js';
 import { TeamsStore } from './teams.store.js';
@@ -14,7 +15,7 @@ import { TeamsStore } from './teams.store.js';
 @Module({
   imports: [AgentModule, MemoryModule, StudioModule],
   controllers: [TeamsController, RunsController],
-  providers: [TeamsStore, TeamsService, RunEngine],
-  exports: [TeamsService],
+  providers: [TeamsStore, TeamsService, RunEngine, RunHooks],
+  exports: [TeamsService, TeamsStore, RunEngine, RunHooks],
 })
 export class TeamsModule {}

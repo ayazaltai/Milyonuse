@@ -4,7 +4,7 @@
 > hand. Regenerate with `pnpm docs:routes`; the test suite fails when this file and the code
 > disagree.
 
-88 routes. Every path is served by `apps/api`; the web app reaches it through a
+105 routes. Every path is served by `apps/api`; the web app reaches it through a
 same-origin rewrite of `/api/v1`. Request and response shapes are the zod schemas in
 `packages/contracts`, and every error carries a machine-readable `code` (`errors.ts`).
 
@@ -127,9 +127,9 @@ A session with a membership and `agents.use`. A person’s own teams of their ow
 | POST | `/api/v1/teams/:teamId/runs` | `agents.use` · 10 per min per member · Idempotency-Key | `TeamsController.start` |
 | GET | `/api/v1/teams/templates` | `agents.use` | `TeamsController.templates` |
 
-## Team runs — `/api/v1/runs`
+## Runs — `/api/v1/runs`
 
-A session with a membership and `agents.use`. A run’s task graph, its append-only steps and its result (0012), and the person’s word on it: stop it, add budget to a run waiting for them, or run a failed or interrupted task again as a new attempt. A finished run is sealed; anything a run would change outside is a card on its conversation, never done on a member’s word.
+A session with a membership and `agents.use`. Every run — a team’s, an agent’s, an automation’s — filtered by team, automation or state. A run’s task graph, its append-only steps and its result (0012), and the person’s word on it: stop it, add budget to a run waiting for them, or run a failed or interrupted task again as a new attempt. A finished run is sealed; anything a run would change outside is a card on its conversation, never done on a member’s word.
 
 | Method | Path | Access | Handler |
 |---|---|---|---|
@@ -138,6 +138,44 @@ A session with a membership and `agents.use`. A run’s task graph, its append-o
 | POST | `/api/v1/runs/:runId/cancel` | `agents.use` | `RunsController.cancel` |
 | POST | `/api/v1/runs/:runId/resume` | `agents.use` | `RunsController.resume` |
 | POST | `/api/v1/runs/:runId/tasks/:taskId/rerun` | `agents.use` | `RunsController.rerun` |
+
+## Automations — `/api/v1/automations`
+
+A session with a membership and `agents.use`. A person’s own automations (0013): what starts them — a schedule, a page that changed, a goal, a signed webhook, a mail, another run ending, or the person — and which of their agents or teams they run. The next run is computed in SQL across daylight-saving changes; one event starts one run; chains are at most three deep and never loop; three failures in a row pause one. Unattended, only safe work runs; `trusted` needs the person’s confirmation, and anything else is a card in the Inbox. A draft reads words into a configuration and makes nothing.
+
+| Method | Path | Access | Handler |
+|---|---|---|---|
+| GET | `/api/v1/automations` | `agents.use` | `AutomationsController.list` |
+| POST | `/api/v1/automations` | `agents.use` · Idempotency-Key | `AutomationsController.create` |
+| GET | `/api/v1/automations/:id` | `agents.use` | `AutomationsController.get` |
+| PATCH | `/api/v1/automations/:id` | `agents.use` | `AutomationsController.update` |
+| DELETE | `/api/v1/automations/:id` | `agents.use` | `AutomationsController.remove` |
+| POST | `/api/v1/automations/:id/rotate-hook` | `agents.use` | `AutomationsController.rotate` |
+| POST | `/api/v1/automations/:id/run` | `agents.use` · 10 per min per member · Idempotency-Key | `AutomationsController.run` |
+| POST | `/api/v1/automations/:id/test` | `agents.use` · 10 per min per member · Idempotency-Key | `AutomationsController.test` |
+| POST | `/api/v1/automations/draft` | `agents.use` | `AutomationsController.draft` |
+
+## The Inbox — `/api/v1/inbox`
+
+A session with a membership and `agents.use`. Everything waiting for the person: proposals, runs waiting at their budget, memories waiting for approval, and the automations’ alerts, notices and suggestions. Proposals confirmed together each go through the same confirmation as one alone.
+
+| Method | Path | Access | Handler |
+|---|---|---|---|
+| GET | `/api/v1/inbox` | `agents.use` | `InboxController.view` |
+| GET | `/api/v1/inbox/count` | `agents.use` | `InboxController.count` |
+| POST | `/api/v1/inbox/items/:id/resolve` | `agents.use` | `InboxController.resolve` |
+| POST | `/api/v1/inbox/proposals/confirm` | `agents.use` | `InboxController.confirm` |
+| POST | `/api/v1/inbox/proposals/discard` | `agents.use` | `InboxController.discard` |
+| POST | `/api/v1/inbox/read` | `agents.use` | `InboxController.read` |
+
+## Events from outside — `/api/v1/hooks`
+
+Public, because a sender has no session. A webhook is authenticated by its HMAC-SHA256 signature over `<timestamp>.<body>`, keyed by a secret derived from its address and stored nowhere, within five minutes; forwarded mail by the inbound provider’s bearer (`INBOUND_MAIL_SECRET`). The same delivery twice is accepted once. What arrives is a third party’s word: fenced as data, and the run is tainted by it.
+
+| Method | Path | Access | Handler |
+|---|---|---|---|
+| POST | `/api/v1/hooks/:token` | public · 120 per min per address | `HooksController.webhook` |
+| POST | `/api/v1/hooks/inbound-mail` | public · 300 per min per address | `HooksController.mail` |
 
 ## Verified memory — `/api/v1/memory`
 
@@ -216,8 +254,14 @@ Outside the version prefix and unauthenticated. `live` checks nothing external; 
 | POST | `/api/v1/auth/password/reset` | Carries a password and a one-time token. |
 | POST | `/api/v1/auth/register` | Carries a password; registering twice mails the same link again. |
 | POST | `/api/v1/auth/verify` | A one-time token, spent by the first call. |
+| POST | `/api/v1/automations/:id/rotate-hook` | It answers a new secret; a stored answer would show a secret again. |
+| POST | `/api/v1/automations/draft` | A draft is computed from the words and stored nowhere. |
 | POST | `/api/v1/connections` | Carries a token, and answers a single-use authorization — neither may be stored for replay. |
 | POST | `/api/v1/connections/:connectionId/refresh` | Listing again changes nothing but the list. |
+| POST | `/api/v1/inbox/items/:id/resolve` | Resolving sets a state; doing it twice leaves the same state. |
+| POST | `/api/v1/inbox/proposals/confirm` | A proposal runs at most once — in SQL (0009); a repeat finds it answered. |
+| POST | `/api/v1/inbox/proposals/discard` | A discarded proposal stays discarded; a repeat finds it answered. |
+| POST | `/api/v1/inbox/read` | Marking read sets a state; doing it twice leaves the same state. |
 | POST | `/api/v1/me/password` | Carries a password. |
 | POST | `/api/v1/memory/:memoryId/adopt` | Adopting the same memory again finds it already known; nothing is stored twice. |
 | POST | `/api/v1/memory/:memoryId/approve` | Approving an approved memory changes nothing. |

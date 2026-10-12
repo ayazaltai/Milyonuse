@@ -174,6 +174,12 @@ export const envSchema = z.object({
   // Teams (F5): member tasks a run works on at once, and how long one queue slice advances a run.
   TEAM_MAX_PARALLEL: z.coerce.number().int().min(1).max(8).default(3),
   RUN_SLICE_SECONDS: z.coerce.number().int().min(20).max(280).default(240),
+  // Automations (F6): the domain an automation's mail address is on, and the bearer the inbound mail
+  // provider sends with each mail it forwards. Unset, mail automations have an address but nothing arrives.
+  INBOUND_MAIL_DOMAIN: z.string().min(3).default('in.milyonuse.com'),
+  INBOUND_MAIL_SECRET: z.string().min(32, 'INBOUND_MAIL_SECRET must be at least 32 characters').optional(),
+  /** Pages one minute's pass checks for monitors, at most. */
+  MONITOR_BATCH: z.coerce.number().int().min(1).max(200).default(25),
   /** Google's OAuth client, for Gmail, Calendar and Drive. Unset, those cards say they are not available. */
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
