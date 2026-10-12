@@ -39,6 +39,10 @@ export interface TurnAgent {
   /** Skills it may open, by id; null — the plain agent — any of the person's enabled ones. */
   skills: string[] | null;
   unattendedPolicy: 'safe_only' | 'trusted';
+  /** The team it works in now (F5): its memory goes to the team's. */
+  teamId?: string | undefined;
+  /** The most trust what it proposes may get: T4 for a member's output, T2 for a lead's synthesis (F5 §2). */
+  tierCap?: 'T2' | 'T4' | undefined;
 }
 
 /**

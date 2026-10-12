@@ -86,6 +86,8 @@ export interface MemoryItemView {
   operator: boolean;
   /** Set when it is one agent's own memory (0011), not every agent's of the person's. */
   agentId: string | null;
+  /** Set when it is a team's memory (0012): its members' and lead's, never the person's until they adopt it. */
+  teamId: string | null;
   stateReason: string | null;
   verdict: string | null;
   createdAt: string;

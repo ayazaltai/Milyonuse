@@ -87,6 +87,9 @@ importers:
       '@milyonuse/poisonbench':
         specifier: workspace:*
         version: link:../../evals/poisonbench
+      '@milyonuse/teambench':
+        specifier: workspace:*
+        version: link:../../evals/teambench
       '@nestjs/testing':
         specifier: 12.1.1
         version: 12.1.1(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@12.1.0(@nestjs/common@12.1.0(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2))
@@ -197,6 +200,28 @@ importers:
       '@milyonuse/security':
         specifier: workspace:*
         version: link:../../packages/security
+    devDependencies:
+      '@milyonuse/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@types/node':
+        specifier: 26.6.3
+        version: 26.6.3
+      eslint:
+        specifier: 10.11.0
+        version: 10.11.0(jiti@2.7.0)
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: 5.0.2
+        version: 5.0.2(@types/node@26.6.3)(vite@8.3.4(@types/node@26.6.3)(jiti@2.7.0))
+
+  evals/teambench:
+    dependencies:
+      '@milyonuse/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
     devDependencies:
       '@milyonuse/config':
         specifier: workspace:*

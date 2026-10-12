@@ -89,12 +89,18 @@ export class ActionService implements OnModuleInit, OnApplicationBootstrap, OnMo
     return this.scope.run({ organizationId: principal.organizationId, memberId: principal.memberId }, fn);
   }
 
-  /** The RiskEngine's word on a call, in this mode. */
-  classify(tool: AgentTool, args: Record<string, unknown>, mode: ToolContext['mode']): RiskVerdict {
+  /** The RiskEngine's word on a call, in this mode — and, for work no one watches (a team run), under its policy. */
+  classify(
+    tool: AgentTool,
+    args: Record<string, unknown>,
+    mode: ToolContext['mode'],
+    unattended?: { policy: 'safe_only' | 'trusted' },
+  ): RiskVerdict {
     return classify({
       tool: { name: tool.name, risk: tool.risk ?? 'safe', reversible: tool.reversible ?? true },
       args,
       mode: mode ?? 'ask',
+      ...(unattended ? { unattended } : {}),
     });
   }
 

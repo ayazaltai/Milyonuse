@@ -171,8 +171,8 @@ beforeAll(async () => {
       { provide: WEB_FETCHER, useValue: internet },
     ],
   );
-  // A replay an earlier run left queued would meet this run's script; the queue starts empty of them.
-  await platform.query(`UPDATE jobs SET status = 'cancelled', finished_at = now() WHERE kind = 'skill_replay' AND status IN ('queued', 'running')`);
+  // Work an earlier run left queued would meet this run's script; the queue starts empty of it.
+  await platform.query(`UPDATE jobs SET status = 'cancelled', finished_at = now() WHERE status IN ('queued', 'running')`);
   ada = await signUp('ada', 'Ada Lovelace');
   grace = await signUp('grace', 'Grace Hopper');
 }, 90_000);

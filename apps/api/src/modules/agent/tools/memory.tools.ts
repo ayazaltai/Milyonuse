@@ -1,12 +1,23 @@
 import { ulidSchema } from '@milyonuse/contracts';
+import { type TrustTier, lessTrusted } from '@milyonuse/memory';
 import { z } from 'zod';
 import type { MemoryService } from '../../memory/memory.service.js';
 import type { MemoryOwner } from '../../memory/memory.store.js';
 import { type AgentTool, type ToolContext, tool } from './tool.js';
 
-/** Whose memory a call reads and writes: the person's — and an agent's own, when it keeps one (0011). */
+/**
+ * Whose memory a call reads and writes: the person's — and a team's at work
+ * (0012), or an agent's own when it keeps one (0011).
+ */
 function owner(context: ToolContext): MemoryOwner {
+  if (context.agent?.teamId) return { ...context.principal, teamId: context.agent.teamId };
   return context.agent?.memoryScope === 'agent' ? { ...context.principal, agentId: context.agent.id } : context.principal;
+}
+
+/** The trust a turn may propose at most: what the model asked for, and never above its team role's cap (F5 §2). */
+function capped(asked: TrustTier | undefined, cap: TrustTier | undefined): TrustTier | undefined {
+  if (!cap) return asked;
+  return asked ? lessTrusted(asked, cap) : cap;
 }
 
 /**
@@ -40,7 +51,7 @@ export function memoryTools(memory: MemoryService): AgentTool[] {
           origin: 'agent',
           conversationId: context.conversationId,
           runId: context.runId,
-          lowerTier: args.lower_tier,
+          lowerTier: capped(args.lower_tier, context.agent?.tierCap),
           parents: args.builds_on,
         });
         return {

@@ -37,6 +37,7 @@
   "devDependencies": {
     "@milyonuse/config": "workspace:*",
     "@milyonuse/poisonbench": "workspace:*",
+    "@milyonuse/teambench": "workspace:*",
     "@nestjs/testing": "12.1.1",
     "@types/node": "26.6.3",
     "@types/nodemailer": "8.0.2",

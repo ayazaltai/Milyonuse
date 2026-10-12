@@ -21,22 +21,34 @@ import { TenantScope } from '../tenancy/tenant-scope.service.js';
 
 /**
  * Whose memory: all the memory code needs of a principal — so the nightly
- * pass, with no session, uses it too. `agentId` is the lens of a turn with one
- * of the person's agents that keeps its own memory (0011): it reads the
- * person's memory and its own, and keeps what it learns as its own.
+ * pass, with no session, uses it too. `agentId` and `teamId` are the lens of
+ * a turn: one of the person's agents that keeps its own memory (0011), or a
+ * team at work (0012). The turn reads the person's memory and that scope's,
+ * and keeps what it learns in that scope — a team's before an agent's.
  */
-export type MemoryOwner = Pick<Principal, 'organizationId' | 'memberId'> & { agentId?: string | null | undefined };
+export type MemoryOwner = Pick<Principal, 'organizationId' | 'memberId'> & {
+  agentId?: string | null | undefined;
+  teamId?: string | null | undefined;
+};
 
-/** Which memories a read sees: the person's, an agent's own besides, or — for the nightly pass — every scope. */
+/** Which memories a read sees: the person's, one scope's besides (`agent:<id>`, `team:<id>`), or — for the nightly pass — every scope. */
 export type MemoryLens = string | null | '*';
 
+/** The scope a turn reads and writes besides the person's own. */
+export function scopeOf(owner: MemoryOwner): { kind: 'agent' | 'team'; ref: string } | null {
+  if (owner.teamId) return { kind: 'team', ref: owner.teamId };
+  if (owner.agentId) return { kind: 'agent', ref: owner.agentId };
+  return null;
+}
+
 export function lensOf(owner: MemoryOwner): MemoryLens {
-  return owner.agentId ?? null;
+  const scope = scopeOf(owner);
+  return scope ? `${scope.kind}:${scope.ref}` : null;
 }
 
 /** The lens as SQL, on parameter `$n`. */
 function inLens(n: number): string {
-  return `($${n}::text = '*' OR m.scope = 'user' OR (m.scope = 'agent' AND m.scope_ref::text = $${n}::text))`;
+  return `($${n}::text = '*' OR m.scope = 'user' OR (m.scope::text || ':' || m.scope_ref::text) = $${n}::text)`;
 }
 
 export interface MemoryRow {
@@ -84,8 +96,8 @@ export interface NewMemory {
   ceiling: number;
   embedding: number[] | null;
   embeddingModel: string | null;
-  /** One agent's own (0011); the person's when absent. */
-  agentId?: string | null | undefined;
+  /** One agent's or team's own (0011, 0012); the person's when absent. */
+  scope?: { kind: 'agent' | 'team'; ref: string } | null | undefined;
 }
 
 const ITEM = `m.id, m.member_id, m.scope::text AS scope, m.scope_ref, m.content, m.tier::text AS tier, m.state::text AS state, m.source_kind::text AS source_kind,
@@ -173,7 +185,7 @@ export class MemoryStore {
                                  run_id, actor, evidence_hash, sensitivity, trust_ceiling, embedding, embedding_model,
                                  scope, scope_ref)
        VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10, $11, $12, $13::vector, $14,
-               CASE WHEN $15::text IS NULL THEN 'user' ELSE 'agent' END::memory_scope, $15)
+               COALESCE($15::text, 'user')::memory_scope, $16)
        RETURNING id`,
       [
         principal.organizationId,
@@ -190,7 +202,8 @@ export class MemoryStore {
         memory.ceiling,
         memory.embedding ? vectorLiteral(memory.embedding) : null,
         memory.embedding ? memory.embeddingModel : null,
-        memory.agentId ?? null,
+        memory.scope?.kind ?? null,
+        memory.scope?.ref ?? null,
       ],
     );
     return rows[0]!.id;
@@ -621,6 +634,7 @@ export function memoryView(row: MemoryRow, now = new Date()): MemoryItemView {
     reaffirmCount: row.reaffirm_count,
     operator: row.member_id === null,
     agentId: row.scope === 'agent' ? row.scope_ref : null,
+    teamId: row.scope === 'team' ? row.scope_ref : null,
     stateReason: row.state_reason,
     verdict: row.verdict,
     createdAt: row.created_at.toISOString(),

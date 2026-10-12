@@ -87,6 +87,23 @@ const SURFACES: Record<string, Surface> = {
       'was learned from.',
     mayBeUnguarded: false,
   },
+  teams: {
+    title: 'Agent teams',
+    note:
+      'A session with a membership and `agents.use`. A person’s own teams of their own agents (0012): one ' +
+      'lead, members, at most one reviewer, and a way of working. A team made from a template gets agents of ' +
+      'its own. Giving a team a goal starts a run, which the queue advances in slices; anyone else’s team is a 404.',
+    mayBeUnguarded: false,
+  },
+  runs: {
+    title: 'Team runs',
+    note:
+      'A session with a membership and `agents.use`. A run’s task graph, its append-only steps and its result ' +
+      '(0012), and the person’s word on it: stop it, add budget to a run waiting for them, or run a failed or ' +
+      'interrupted task again as a new attempt. A finished run is sealed; anything a run would change outside ' +
+      'is a card on its conversation, never done on a member’s word.',
+    mayBeUnguarded: false,
+  },
   memory: {
     title: 'Verified memory',
     note:

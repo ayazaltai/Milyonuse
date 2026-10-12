@@ -8,3 +8,4 @@ export * from './agent.js';
 export * from './memory.js';
 export * from './actions.js';
 export * from './studio.js';
+export * from './teams.js';

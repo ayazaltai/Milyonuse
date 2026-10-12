@@ -5,6 +5,7 @@ import { AppLogger } from '../../common/logging/logger.js';
 import { ENV } from '../../config/config.module.js';
 import type { Env } from '../../config/env.js';
 import { PLATFORM_POOL } from '../../database/database.module.js';
+import { RunEngine } from '../teams/run-engine.js';
 import { ActionService } from '../agent/actions/action.service.js';
 import { MemoryWorker } from '../memory/memory.worker.js';
 import { OperationsWorker } from '../observability/operations.worker.js';
@@ -85,6 +86,7 @@ export class CronService {
       await step('purge', () => get(OperationsWorker).purge());
       await step('memory', () => get(MemoryWorker).consolidate());
       await step('actions', () => get(ActionService).sweep());
+      await step('teams', () => get(RunEngine).sweep());
       await step('selfProbe', () => get(OperationsWorker).probe());
     }
 

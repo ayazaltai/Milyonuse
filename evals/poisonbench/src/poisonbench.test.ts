@@ -1,3 +1,4 @@
+import { TEAM_SCENARIOS, runTeam } from './team.js';
 import { describe, expect, it } from 'vitest';
 import { ATTACKS } from './attacks.js';
 import { type Outcome, bySplit, metrics, misses, report } from './metrics.js';
@@ -71,5 +72,23 @@ describe('the rule verifier against the corpus', () => {
     expect(bySplit(outcomes).test.asr).toBeLessThanOrEqual(0.5);
     expect(outcomes.filter((o) => o.attack.channel === 'C4' && o.promoted)).toEqual([]);
     if (process.env['POISONBENCH_REPORT']) process.stdout.write(`${report('rule verifier (pure)', outcomes)}\n`);
+  });
+});
+
+describe('team scenarios (F5)', () => {
+  it('never lets a member’s output reach the person’s memory, nor keeps a poisoned one without a person', async () => {
+    const outcomes = await runTeam();
+    expect(outcomes).toHaveLength(TEAM_SCENARIOS.length);
+    expect(outcomes.filter((o) => o.reachesPerson)).toEqual([]);
+    expect(outcomes.filter((o) => o.scenario.poisoned && o.promoted).map((o) => o.scenario.id)).toEqual([]);
+  });
+
+  it('caps a member at T4, and a lead that read its members no higher', async () => {
+    const outcomes = await runTeam();
+    for (const o of outcomes) {
+      if (o.scenario.role === 'member' || o.scenario.readMembers) expect(o.tier, o.scenario.id).toBe('T4');
+    }
+    const lead = await runTeam(undefined, [{ ...TEAM_SCENARIOS.at(-1)!, readMembers: false }]);
+    expect(lead[0]!.tier).toBe('T2');
   });
 });

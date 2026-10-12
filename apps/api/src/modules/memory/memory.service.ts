@@ -46,7 +46,7 @@ import { UsageMeter } from '../usage/usage.meter.js';
 import { AGENT_MODEL, type AgentModel } from '../agent/agent-model.port.js';
 import { modelOptions, offeredModels } from '../agent/models.js';
 import { MEMORY_EMBEDDER } from './embedder.js';
-import { MemoryStore, type MemoryOwner, type MemoryRow, lensOf, memoryView, trustOf } from './memory.store.js';
+import { MemoryStore, type MemoryOwner, type MemoryRow, lensOf, memoryView, scopeOf, trustOf } from './memory.store.js';
 
 /** What proposing a memory did, said to whoever proposed it. */
 export interface ProposalOutcome {
@@ -200,7 +200,7 @@ export class MemoryService {
           embedding,
           embeddingModel: embedding ? this.embedder.model : null,
           // What an agent with its own memory learns is its own; what the person says of themselves is theirs.
-          agentId: input.origin === 'agent' ? (principal.agentId ?? null) : null,
+          scope: input.origin === 'agent' ? scopeOf(principal) : null,
         });
         await this.store.derive(client, principal, created, {
           sourceUris: derived.derivedFrom,
@@ -352,6 +352,22 @@ export class MemoryService {
       }
       return memoryView(await this.store.get(client, id));
     });
+  }
+
+  /**
+   * The person takes a team's or an agent's memory as their own (F5 §2): it is
+   * proposed again in their name — the person's word, checked like any other —
+   * and built on the one it came from. Nothing a team learns reaches the
+   * person's memory any other way.
+   */
+  async adopt(principal: MemoryOwner, id: string): Promise<ProposalOutcome> {
+    const item = await this.store.run(principal, (client) => this.store.get(client, id));
+    if (item.scope === 'user') throw new AppError(ErrorCode.CONFLICT, 'This memory is already yours.');
+    if (!['active', 'pending'].includes(item.state)) throw new AppError(ErrorCode.CONFLICT, 'Only a kept or waiting memory can be adopted.');
+    return this.propose(
+      { organizationId: principal.organizationId, memberId: principal.memberId },
+      { content: item.content, origin: 'person', parents: [item.id] },
+    );
   }
 
   /**

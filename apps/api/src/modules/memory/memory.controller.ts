@@ -117,6 +117,19 @@ export class MemoryController {
     return this.memory.approve(principal, ulidSchema.parse(memoryId));
   }
 
+  /** A team's or an agent's memory, taken as the person's own — proposed again in their words. */
+  @Post(":memoryId/adopt")
+  @HttpCode(200)
+  @IdempotencyExempt(
+    "Adopting the same memory again finds it already known; nothing is stored twice.",
+  )
+  async adopt(
+    @CurrentPrincipal() principal: Principal,
+    @Param("memoryId") memoryId: string,
+  ) {
+    return this.memory.adopt(principal, ulidSchema.parse(memoryId));
+  }
+
   @Post(":memoryId/reaffirm")
   @HttpCode(200)
   @IdempotencyExempt(

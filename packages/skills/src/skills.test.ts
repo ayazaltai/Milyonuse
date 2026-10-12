@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   AGENT_TEMPLATES,
+  TEAM_TEMPLATES,
   BUNDLED_SKILLS,
   FrontmatterError,
   SKILL_NAME,
   SkillParseError,
   agentTemplate,
+  teamTemplate,
   bundledSkill,
   mayKeep,
   parseSkill,
@@ -203,5 +205,24 @@ describe('agent templates', () => {
   it('finds a template by id', () => {
     expect(agentTemplate('teacher')?.roleTitle.en).toBe('Teacher');
     expect(agentTemplate('ghost')).toBeUndefined();
+  });
+});
+
+describe('team templates', () => {
+  it('offers the four teams of the plan', () => {
+    expect(TEAM_TEMPLATES.map((t) => t.id)).toEqual(['research-desk', 'content-studio', 'market-intelligence', 'personal-office']);
+    expect(teamTemplate('research-desk')?.mode).toBe('hierarchical');
+    expect(teamTemplate('nope')).toBeUndefined();
+  });
+
+  it.each(TEAM_TEMPLATES.map((t) => [t.id, t] as const))('%s has one lead, at most one reviewer, and known agent templates', (_id, t) => {
+    expect(t.members.filter((m) => m.role === 'lead')).toHaveLength(1);
+    expect(t.members.filter((m) => m.role === 'reviewer').length).toBeLessThanOrEqual(1);
+    for (const m of t.members) {
+      expect(agentTemplate(m.template), m.template).toBeDefined();
+      expect(m.specialty.en && m.specialty.tr).toBeTruthy();
+    }
+    expect(t.name.en && t.name.tr && t.purpose.en && t.purpose.tr).toBeTruthy();
+    if (t.mode === 'debate') expect(t.members.filter((m) => m.role === 'member').length).toBeGreaterThanOrEqual(2);
   });
 });

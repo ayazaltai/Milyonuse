@@ -130,12 +130,12 @@ export class AgentStore {
   async createConversation(
     client: pg.PoolClient,
     principal: Principal,
-    input: { title: string; model: string; agentId?: string | null | undefined },
+    input: { title: string; model: string; agentId?: string | null | undefined; teamId?: string | null | undefined },
   ): Promise<ConversationRow> {
     const { rows } = await client.query<ConversationRow>(
-      `INSERT INTO agent_conversations AS c (organization_id, member_id, title, model, agent_id)
-       VALUES ($1, $2, $3, $4, $5) RETURNING ${CONVERSATION}`,
-      [principal.organizationId, principal.memberId, input.title, input.model, input.agentId ?? null],
+      `INSERT INTO agent_conversations AS c (organization_id, member_id, title, model, agent_id, team_id)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING ${CONVERSATION}`,
+      [principal.organizationId, principal.memberId, input.title, input.model, input.agentId ?? null, input.teamId ?? null],
     );
     return rows[0]!;
   }

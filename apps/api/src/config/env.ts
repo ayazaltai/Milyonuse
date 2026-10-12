@@ -171,6 +171,9 @@ export const envSchema = z.object({
   SANDBOX_TIMEOUT_SECONDS: z.coerce.number().int().min(5).max(600).default(60),
   /** Sandbox minutes a person may use a day. */
   SANDBOX_DAILY_MINUTES: z.coerce.number().int().min(1).max(1440).default(30),
+  // Teams (F5): member tasks a run works on at once, and how long one queue slice advances a run.
+  TEAM_MAX_PARALLEL: z.coerce.number().int().min(1).max(8).default(3),
+  RUN_SLICE_SECONDS: z.coerce.number().int().min(20).max(280).default(240),
   /** Google's OAuth client, for Gmail, Calendar and Drive. Unset, those cards say they are not available. */
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),

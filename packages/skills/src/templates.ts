@@ -227,3 +227,119 @@ export const AGENT_TEMPLATES: readonly AgentTemplate[] = [
 export function agentTemplate(id: string): AgentTemplate | undefined {
   return AGENT_TEMPLATES.find((t) => t.id === id);
 }
+
+/**
+ * The team templates (F5 §3): agents made from the templates above, each
+ * with its role on the team. A team made from one gets agents of its own —
+ * changing them later changes nothing in another team.
+ */
+export type TeamMode = 'hierarchical' | 'pipeline' | 'debate';
+export type TeamRole = 'lead' | 'member' | 'reviewer';
+
+export interface TeamTemplateMember {
+  template: string;
+  role: TeamRole;
+  /** Overrides of the agent template's name and role title on this team. */
+  name?: { en: string; tr: string };
+  roleTitle?: { en: string; tr: string };
+  specialty: { en: string; tr: string };
+}
+
+export interface TeamTemplate {
+  id: string;
+  name: { en: string; tr: string };
+  purpose: { en: string; tr: string };
+  mode: TeamMode;
+  members: TeamTemplateMember[];
+}
+
+export const TEAM_TEMPLATES: readonly TeamTemplate[] = [
+  {
+    id: 'research-desk',
+    name: { en: 'Research desk', tr: 'Araştırma masası' },
+    purpose: {
+      en: 'Answers a question from sources, with the numbers checked and the write-up edited.',
+      tr: 'Bir soruyu kaynaklardan yanıtlar; sayılar kontrol edilir, metin düzenlenir.',
+    },
+    mode: 'hierarchical',
+    members: [
+      { template: 'researcher', role: 'lead', specialty: { en: 'Plans the research and writes the answer.', tr: 'Araştırmayı planlar ve yanıtı yazar.' } },
+      { template: 'data-analyst', role: 'member', specialty: { en: 'Checks figures and runs the numbers.', tr: 'Rakamları kontrol eder, hesapları yapar.' } },
+      { template: 'writer', role: 'reviewer', roleTitle: { en: 'Editor', tr: 'Editör' }, specialty: { en: 'Reviews clarity and claims before delivery.', tr: 'Teslimden önce açıklığı ve iddiaları gözden geçirir.' } },
+    ],
+  },
+  {
+    id: 'content-studio',
+    name: { en: 'Content studio', tr: 'İçerik stüdyosu' },
+    purpose: {
+      en: 'Turns a brief into a finished piece: strategy, draft, edit.',
+      tr: 'Bir brifi bitmiş bir metne dönüştürür: strateji, taslak, düzelti.',
+    },
+    mode: 'pipeline',
+    members: [
+      {
+        template: 'market-watcher',
+        role: 'lead',
+        name: { en: 'Sena', tr: 'Sena' },
+        roleTitle: { en: 'Strategist', tr: 'Stratejist' },
+        specialty: { en: 'Sets the angle, audience and key points.', tr: 'Açıyı, kitleyi ve ana noktaları belirler.' },
+      },
+      { template: 'writer', role: 'member', specialty: { en: 'Writes the draft from the strategy.', tr: 'Stratejiden taslağı yazar.' } },
+      {
+        template: 'writer',
+        role: 'reviewer',
+        name: { en: 'Ozan', tr: 'Ozan' },
+        roleTitle: { en: 'Editor', tr: 'Editör' },
+        specialty: { en: 'Edits for voice, length and accuracy.', tr: 'Ses, uzunluk ve doğruluk için düzenler.' },
+      },
+    ],
+  },
+  {
+    id: 'market-intelligence',
+    name: { en: 'Market intelligence', tr: 'Pazar istihbaratı' },
+    purpose: {
+      en: 'Watches companies and markets and explains what changed and why it matters.',
+      tr: 'Şirketleri ve pazarları izler; neyin değiştiğini ve neden önemli olduğunu açıklar.',
+    },
+    mode: 'hierarchical',
+    members: [
+      { template: 'market-watcher', role: 'lead', specialty: { en: 'Finds what changed and leads the brief.', tr: 'Neyin değiştiğini bulur ve özeti yönetir.' } },
+      { template: 'data-analyst', role: 'member', specialty: { en: 'Puts the change in numbers.', tr: 'Değişimi sayılara döker.' } },
+    ],
+  },
+  {
+    id: 'personal-office',
+    name: { en: 'Personal office', tr: 'Kişisel ofis' },
+    purpose: {
+      en: 'Plans your week across calendar and inbox; nothing is sent or booked without you.',
+      tr: 'Haftanı takvim ve gelen kutusu üzerinden planlar; sizsiz hiçbir şey gönderilmez ya da ayarlanmaz.',
+    },
+    mode: 'debate',
+    members: [
+      {
+        template: 'personal-assistant',
+        role: 'lead',
+        roleTitle: { en: 'Office manager', tr: 'Ofis yöneticisi' },
+        specialty: { en: 'Weighs the options and proposes the plan.', tr: 'Seçenekleri tartar ve planı önerir.' },
+      },
+      {
+        template: 'personal-assistant',
+        role: 'member',
+        name: { en: 'Takvim', tr: 'Takvim' },
+        roleTitle: { en: 'Calendar keeper', tr: 'Takvim sorumlusu' },
+        specialty: { en: 'Looks at the calendar.', tr: 'Takvime bakar.' },
+      },
+      {
+        template: 'personal-assistant',
+        role: 'member',
+        name: { en: 'Posta', tr: 'Posta' },
+        roleTitle: { en: 'Inbox keeper', tr: 'Gelen kutusu sorumlusu' },
+        specialty: { en: 'Looks at the inbox.', tr: 'Gelen kutusuna bakar.' },
+      },
+    ],
+  },
+];
+
+export function teamTemplate(id: string): TeamTemplate | undefined {
+  return TEAM_TEMPLATES.find((t) => t.id === id);
+}

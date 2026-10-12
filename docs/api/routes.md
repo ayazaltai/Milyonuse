@@ -4,7 +4,7 @@
 > hand. Regenerate with `pnpm docs:routes`; the test suite fails when this file and the code
 > disagree.
 
-73 routes. Every path is served by `apps/api`; the web app reaches it through a
+88 routes. Every path is served by `apps/api`; the web app reaches it through a
 same-origin rewrite of `/api/v1`. Request and response shapes are the zod schemas in
 `packages/contracts`, and every error carries a machine-readable `code` (`errors.ts`).
 
@@ -111,6 +111,34 @@ A session with a membership and `agents.use`. A person’s skills (0010): the re
 | POST | `/api/v1/skills/versions/:versionId/reject` | `agents.use` | `SkillsController.reject` |
 | POST | `/api/v1/skills/versions/:versionId/replay` | `agents.use` · 10 per min per member | `SkillsController.replay` |
 
+## Agent teams — `/api/v1/teams`
+
+A session with a membership and `agents.use`. A person’s own teams of their own agents (0012): one lead, members, at most one reviewer, and a way of working. A team made from a template gets agents of its own. Giving a team a goal starts a run, which the queue advances in slices; anyone else’s team is a 404.
+
+| Method | Path | Access | Handler |
+|---|---|---|---|
+| GET | `/api/v1/teams` | `agents.use` | `TeamsController.list` |
+| POST | `/api/v1/teams` | `agents.use` · Idempotency-Key | `TeamsController.create` |
+| GET | `/api/v1/teams/:teamId` | `agents.use` | `TeamsController.get` |
+| PATCH | `/api/v1/teams/:teamId` | `agents.use` | `TeamsController.update` |
+| POST | `/api/v1/teams/:teamId/archive` | `agents.use` | `TeamsController.archive` |
+| POST | `/api/v1/teams/:teamId/restore` | `agents.use` | `TeamsController.restore` |
+| GET | `/api/v1/teams/:teamId/runs` | `agents.use` | `TeamsController.runs` |
+| POST | `/api/v1/teams/:teamId/runs` | `agents.use` · 10 per min per member · Idempotency-Key | `TeamsController.start` |
+| GET | `/api/v1/teams/templates` | `agents.use` | `TeamsController.templates` |
+
+## Team runs — `/api/v1/runs`
+
+A session with a membership and `agents.use`. A run’s task graph, its append-only steps and its result (0012), and the person’s word on it: stop it, add budget to a run waiting for them, or run a failed or interrupted task again as a new attempt. A finished run is sealed; anything a run would change outside is a card on its conversation, never done on a member’s word.
+
+| Method | Path | Access | Handler |
+|---|---|---|---|
+| GET | `/api/v1/runs` | `agents.use` | `RunsController.list` |
+| GET | `/api/v1/runs/:runId` | `agents.use` | `RunsController.get` |
+| POST | `/api/v1/runs/:runId/cancel` | `agents.use` | `RunsController.cancel` |
+| POST | `/api/v1/runs/:runId/resume` | `agents.use` | `RunsController.resume` |
+| POST | `/api/v1/runs/:runId/tasks/:taskId/rerun` | `agents.use` | `RunsController.rerun` |
+
 ## Verified memory — `/api/v1/memory`
 
 A session with a membership and `agents.use`. The person’s own memory, read and changed in their own scope (0007): what the agent remembers, why — provenance, evidence, ledger and derivations — and what the person decides: add in their own words, approve, reaffirm (once a day), forget, withdraw a source with everything built on it. Nothing here writes a memory past its checks.
@@ -120,6 +148,7 @@ A session with a membership and `agents.use`. The person’s own memory, read an
 | GET | `/api/v1/memory` | `agents.use` | `MemoryController.list` |
 | POST | `/api/v1/memory` | `agents.use` · 30 per 10 min per member · Idempotency-Key | `MemoryController.create` |
 | GET | `/api/v1/memory/:memoryId` | `agents.use` | `MemoryController.detail` |
+| POST | `/api/v1/memory/:memoryId/adopt` | `agents.use` | `MemoryController.adopt` |
 | POST | `/api/v1/memory/:memoryId/approve` | `agents.use` | `MemoryController.approve` |
 | POST | `/api/v1/memory/:memoryId/forget` | `agents.use` | `MemoryController.forget` |
 | POST | `/api/v1/memory/:memoryId/keep` | `agents.use` | `MemoryController.keep` |
@@ -190,6 +219,7 @@ Outside the version prefix and unauthenticated. `live` checks nothing external; 
 | POST | `/api/v1/connections` | Carries a token, and answers a single-use authorization — neither may be stored for replay. |
 | POST | `/api/v1/connections/:connectionId/refresh` | Listing again changes nothing but the list. |
 | POST | `/api/v1/me/password` | Carries a password. |
+| POST | `/api/v1/memory/:memoryId/adopt` | Adopting the same memory again finds it already known; nothing is stored twice. |
 | POST | `/api/v1/memory/:memoryId/approve` | Approving an approved memory changes nothing. |
 | POST | `/api/v1/memory/:memoryId/forget` | Forgetting a forgotten memory revokes nothing more. |
 | POST | `/api/v1/memory/:memoryId/keep` | Keeping a memory twice keeps it once. |
@@ -197,6 +227,11 @@ Outside the version prefix and unauthenticated. `live` checks nothing external; 
 | POST | `/api/v1/memory/revocations` | Withdrawing a source again revokes nothing more. |
 | POST | `/api/v1/operator/memory/activate` | Authenticated by the signature itself; activating twice is refused by the lifecycle. |
 | POST | `/api/v1/operator/memory/stage` | Authenticated by the signature itself; a repeat stages a second claim the operator sees. |
+| POST | `/api/v1/runs/:runId/cancel` | A finished run is refused, not stopped twice. |
+| POST | `/api/v1/runs/:runId/resume` | Only a run waiting for the person resumes; a repeat is refused, so budget is never added twice. |
+| POST | `/api/v1/runs/:runId/tasks/:taskId/rerun` | Only a failed, interrupted or cancelled task is run again; a repeat finds it waiting and is refused. |
 | POST | `/api/v1/skills/versions/:versionId/approve` | A version is approved once; the database refuses a second move from staging. |
 | POST | `/api/v1/skills/versions/:versionId/reject` | A version is rejected once; the database refuses a second move from staging. |
 | POST | `/api/v1/skills/versions/:versionId/replay` | A replay is queued once per attempt number; a repeat queues nothing new. |
+| POST | `/api/v1/teams/:teamId/archive` | Archiving sets a state; doing it twice leaves the same state. |
+| POST | `/api/v1/teams/:teamId/restore` | Restoring sets a state; doing it twice leaves the same state. |
