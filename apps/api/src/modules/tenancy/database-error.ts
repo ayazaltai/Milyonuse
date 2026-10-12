@@ -201,6 +201,42 @@ const BY_HINT: Record<string, { code: ErrorCode; message: string }> = {
     code: ErrorCode.CONFLICT,
     message: 'Replay evidence is never changed.',
   },
+  run_transition: {
+    code: ErrorCode.CONFLICT,
+    message: 'The run cannot move to that state now.',
+  },
+  run_too_deep: {
+    code: ErrorCode.CONFLICT,
+    message: 'Runs nest at most two deep.',
+  },
+  run_finished: {
+    code: ErrorCode.CONFLICT,
+    message: 'This run has finished and does not change.',
+  },
+  run_identity_fixed: {
+    code: ErrorCode.CONFLICT,
+    message: 'What a run is was fixed when it started.',
+  },
+  run_spend_backwards: {
+    code: ErrorCode.CONFLICT,
+    message: 'What a run spent stays spent.',
+  },
+  task_transition: {
+    code: ErrorCode.CONFLICT,
+    message: 'That task cannot move to that state now.',
+  },
+  task_dependency_unknown: {
+    code: ErrorCode.VALIDATION_FAILED,
+    message: 'A task can depend only on earlier tasks of the same run.',
+  },
+  task_contract_fixed: {
+    code: ErrorCode.CONFLICT,
+    message: 'What a task was asked to do does not change.',
+  },
+  run_step_immutable: {
+    code: ErrorCode.CONFLICT,
+    message: 'A run’s steps are a record and never change.',
+  },
   memory_scope_unknown: {
     code: ErrorCode.VALIDATION_FAILED,
     message: 'That memory names no agent of yours.',
