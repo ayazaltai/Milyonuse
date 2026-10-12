@@ -257,6 +257,18 @@ const BY_HINT: Record<string, { code: ErrorCode; message: string }> = {
     code: ErrorCode.CONFLICT,
     message: 'What arrived for an automation is a record and does not change.',
   },
+  channel_identity_fixed: {
+    code: ErrorCode.CONFLICT,
+    message: 'A channel connection keeps who and where it is. Disconnect it and pair again.',
+  },
+  channel_pairing_used: {
+    code: ErrorCode.CONFLICT,
+    message: 'That pairing code was already used.',
+  },
+  channel_pairing_expired: {
+    code: ErrorCode.CONFLICT,
+    message: 'That pairing code has expired. Make a new one in the app.',
+  },
   memory_scope_unknown: {
     code: ErrorCode.VALIDATION_FAILED,
     message: 'That memory names no agent of yours.',

@@ -10,3 +10,5 @@ account_tokens      # one-time links an account mail carries (0002), before any 
 rate_limit_windows  # request counters keyed by a digest (0005), counted before any tenant is known; platform role only
 system_log          # the team's operational record across tenants (0005); platform role only, masked before written
 worker_heartbeats   # when each scheduled pass last finished (0005); the deployment's own fact
+channel_pairing_locks  # wrong pairing codes per channel identity (0014), counted before any tenant is known; platform role only
+channel_events         # a channel's delivery ids kept a week (0014), deduped before any tenant is known; platform role only
