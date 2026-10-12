@@ -56,7 +56,7 @@ export function Sidebar({ me, locale }: { me: Me; locale: Locale }) {
       items: [
         { href: '/app/agents', label: n.agents, Icon: Bot },
         { href: '/app/skills', label: n.skills, Icon: BookOpenCheck },
-        { href: '/app/teams', label: n.teams, Icon: Users, soon: true },
+        { href: '/app/teams', label: n.teams, Icon: Users },
         { href: '/app/memory', label: n.memory, Icon: BrainCircuit },
       ],
     },

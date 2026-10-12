@@ -60,6 +60,9 @@ export class DevelopmentAgentModel implements AgentModel {
     if (!last) return this.answer(`${NOTE}\n\nNothing to answer.`);
     // The conversation's summary: the person's own words, listed.
     if (request.system === SUMMARY_INSTRUCTIONS) return this.answer(remembered(last.content));
+    // A team run (F5): each role by the engine's own markers.
+    const team = this.teamRole(request);
+    if (team) return team;
     if (last.role === 'tool') return this.afterTools(request.messages);
     if (last.role !== 'user') return this.answer(`${NOTE}\n\nNothing to answer.`);
 
@@ -120,6 +123,37 @@ export class DevelopmentAgentModel implements AgentModel {
         '- “Use the debugging skill”, or “Save this as a skill called weekly-digest”\n' +
         '- Ask for the time',
     );
+  }
+
+  /**
+   * A team at work, by rule: the lead gives each member one task on the goal,
+   * a member reports on its contract, the lead merges what came back, the
+   * reviewer approves. Enough to watch a run move on a developer machine.
+   */
+  private teamRole(request: AgentModelRequest): AgentModelResult | null {
+    const { system } = request;
+    const first = request.messages.find((m) => m.role === 'user')?.content ?? '';
+    const afterTool = request.messages.at(-1)?.role === 'tool';
+    if (system.includes('— Team run: you lead —')) {
+      if (afterTool) return this.answer('');
+      const roster = [...system.matchAll(/^- ([^,—\n]+?)(?:, [^—\n]*)? — (lead|member)/gm)].map((m) => ({ name: m[1]!.trim(), role: m[2]! }));
+      const members = roster.filter((r) => r.role === 'member');
+      const workers = members.length > 0 ? members : roster;
+      const goal = first.replace(/^Goal of this run:\s*/, '').trim();
+      return this.call('plan_tasks', {
+        tasks: workers.map((w, i) => ({ key: `t${i + 1}`, title: `${w.name}'s part`, goal, assignee: w.name })),
+      });
+    }
+    if (system.includes('— Team run: you merge —')) {
+      const parts = [...first.matchAll(/<<<data [0-9a-f]+ · ([^\n]*)\n([\s\S]*?)\n>>>data/g)].map((m) => `**${m[1]}**\n\n${m[2]}`);
+      return this.call('merge_results', { result: `${NOTE}\n\n${parts.join('\n\n') || 'Nothing came back.'}` });
+    }
+    if (system.includes('— Team run: you review —')) return this.call('approve_result', {});
+    if (system.includes('— Team run: you take one task —')) {
+      const task = /^Task (\w+): (.*)$/m.exec(first);
+      return this.answer(`${NOTE} I worked on ${task?.[1] ?? 'the task'} (${task?.[2] ?? ''}): here is what I would report, with sources.`);
+    }
+    return null;
   }
 
   /** What follows a tool's answer: a table read is shown as a card; anything else is said in words. */

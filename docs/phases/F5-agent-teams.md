@@ -2,7 +2,7 @@
 
 **Amaç:** Kullanıcı birden çok agent'ı takım olarak çalıştırır. Lider işi planlar, üyelere görev verir, işler paralel yürür, gözden geçiren üye kontrol eder, sonuç birleşik teslim edilir. Takım hafızası ortaktır ama doğrulanmıştır.
 
-**Bağımlılık:** F4 · **Kaynak:** Agent 5.5 `delegation/subagent.py` (context contract), App-Milyonus run dilimleme
+**Bağımlılık:** F4 · **Kaynak:** Agent 5.5 `delegation/subagent.py` (context contract), App-Milyonus run dilimleme · **Durum:** ✅ tamamlandı — [teslim raporu](../delivered/F5-delivered.md) (şartnameden sapmalar §6'da)
 
 ---
 

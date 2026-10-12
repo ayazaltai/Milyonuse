@@ -8,7 +8,7 @@ import { request } from '@/lib/client-api';
 import { messageFor } from '@/lib/messages';
 import { TrustBar, stateTone } from './memory-parts';
 
-type Action = 'approve' | 'reaffirm' | 'forget' | 'keep';
+type Action = 'approve' | 'reaffirm' | 'forget' | 'keep' | 'adopt';
 
 /**
  * "Why does the agent know this?" — one memory's provenance, evidence,
@@ -62,7 +62,7 @@ export function MemoryWhy({
       setMessage({ tone: 'danger', text: messageFor(response.error, t) });
       return;
     }
-    setMessage({ tone: 'pass', text: action === 'reaffirm' ? m.reaffirmed : m.done });
+    setMessage({ tone: 'pass', text: action === 'reaffirm' ? m.reaffirmed : action === 'adopt' ? m.adopted : m.done });
     onChanged();
     await load();
   }
@@ -100,6 +100,7 @@ export function MemoryWhy({
               <Tag tone={item.tier === 'T0' ? 'brand' : 'neutral'}>{m.tiers[item.tier]}</Tag>
               <Tag tone={stateTone(item.state)}>{m.states[item.state]}</Tag>
               {item.sensitivity === 'sensitive' && <Tag tone="review">{m.sensitive}</Tag>}
+              {(item.teamId || item.agentId) && <Tag tone="brand">{item.teamId ? m.teamScope : m.agentScope}</Tag>}
               <span style={{ flex: '1 1 160px', maxWidth: 220 }}>
                 <TrustBar trust={item.trust} label={m.trustOf(item.trust.toFixed(2))} />
               </span>
@@ -210,6 +211,11 @@ export function MemoryWhy({
                 {(item.state === 'active' || item.state === 'demoted') && (
                   <Button disabled={busy !== null} onClick={() => void act('reaffirm')}>
                     {m.reaffirm}
+                  </Button>
+                )}
+                {(item.teamId || item.agentId) && (item.state === 'active' || item.state === 'pending') && (
+                  <Button variant="primary" disabled={busy !== null} onClick={() => void act('adopt')} title={m.scopeHint}>
+                    {m.adopt}
                   </Button>
                 )}
                 {item.state === 'pending' && item.tier === 'T4' && (

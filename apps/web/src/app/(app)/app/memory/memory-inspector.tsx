@@ -233,6 +233,11 @@ export function MemoryInspector({
                       </Td>
                       <Td nowrap>
                         <Tag tone={item.tier === 'T0' ? 'brand' : 'neutral'}>{m.tiers[item.tier]}</Tag>
+                        {(item.teamId || item.agentId) && (
+                          <span title={m.scopeHint} style={{ marginLeft: 6 }}>
+                            <Tag tone="brand">{item.teamId ? m.teamScope : m.agentScope}</Tag>
+                          </span>
+                        )}
                       </Td>
                       <Td>
                         <TrustBar trust={item.trust} label={m.trustOf(item.trust.toFixed(2))} />

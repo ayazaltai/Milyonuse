@@ -83,7 +83,7 @@ Kaynak commit'leri (inceleme anı):
 | `tools/mcp/{client,manager}.py` | `connections/mcp-client/*` | Port + Streamable HTTP | F3 |
 | `research/{deep,search}.py` | `agent/tools/research.tools.ts` | Port | F3 |
 | `skills/*`, `_bundled_skills/` (41) | `packages/skills` (16 kaynak → 12 beceri; 25 elendi — F4-delivered §6) | Port + inceleme | F4 |
-| `delegation/subagent.py` | `teams/delegation.ts` | Port | F5 |
+| `delegation/subagent.py` | `apps/api/src/modules/teams/{run-engine,team-turn}.ts` (bağlam sözleşmesi) | Uyarlama | F5 |
 | `cron/schedule.py` | `packages/contracts` + `automations/schedule-parser.ts` | Port | F6 |
 | `proactive/{scheduler,runner,suggest}.py` | `automations/*` | Port | F6 |
 | `gateway/{adapter,pairing,server}.py`, `gateway/adapters/*` | `packages/channels`, `channels/*` | Port | F7 |

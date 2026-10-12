@@ -3785,3 +3785,40 @@ body {
 .checkline { display: flex; align-items: flex-start; gap: 10px; padding: 4px 0; font-size: 13.5px; color: var(--w-80); line-height: 1.45; cursor: pointer; }
 .check { flex: none; width: 15px; height: 15px; margin: 2px 0 0; accent-color: var(--brand-500); cursor: inherit; }
 .checkline-hint { display: block; margin-top: 2px; font-size: 12px; color: var(--w-50); }
+
+/* ─────────────────────────────────────────────── teams and runs (F5) */
+.roster { display: grid; gap: 8px; }
+.roster-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px minmax(0, 1.2fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--w-08);
+  border-radius: 12px;
+}
+@media (max-width: 760px) {
+  .roster-row { grid-template-columns: minmax(0, 1fr); }
+}
+.avatars { display: inline-flex; }
+.avatars .studio-avatar { width: 30px; height: 30px; font-size: 15px; border-radius: 10px; margin-right: -6px; border-color: var(--ink); }
+.run-graph { width: 100%; overflow-x: auto; }
+.run-graph svg { display: block; min-width: 100%; }
+.run-node rect { fill: var(--w-06); stroke: var(--w-14); stroke-width: 1; }
+.run-node[data-status='running'] rect { stroke: var(--brand-500); stroke-width: 1.5; }
+.run-node[data-status='done'] rect { stroke: var(--pass); }
+.run-node[data-status='failed'] rect, .run-node[data-status='uncertain'] rect { stroke: var(--danger); }
+.run-node[data-status='cancelled'] rect { stroke: var(--w-20); stroke-dasharray: 4 3; }
+.run-node text { fill: var(--w-80); font-size: 12px; font-family: inherit; }
+.run-node .run-node-key { fill: var(--w-50); font-size: 11px; }
+.run-node .run-node-avatar { font-size: 15px; }
+.run-edge { stroke: var(--w-20); stroke-width: 1.2; fill: none; }
+.run-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 420px; overflow-y: auto; }
+.run-steps li { display: grid; grid-template-columns: 34px 70px minmax(0, 1fr); gap: 8px; font-size: 12.5px; color: var(--w-80); line-height: 1.5; }
+.run-steps .seq { color: var(--w-35); text-align: right; }
+.run-steps .kind { color: var(--w-50); }
+.run-result { font-size: 14px; line-height: 1.65; color: var(--w-80); }
+.task-list { display: grid; gap: 8px; }
+.task-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 12px 14px; border: 1px solid var(--w-08); border-radius: 12px; }
+.task-row p { margin: 0; }
+.task-row details summary { cursor: pointer; font-size: 12.5px; color: var(--w-60); margin-top: 6px; }

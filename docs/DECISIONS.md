@@ -162,3 +162,13 @@ Biçim: **Karar · Gerekçe · Sonuç · Durum**
   - Katalog kod içindedir (`packages/skills`). Agent 5.5'in 41 becerisinden terminal, sunucu ve bulut varsayanlar elendi.
 - **Durum:** Kabul (F4, 2026-10-11).
 
+### D-21 — Takımların uygulama kararları (F5)
+- **Karar:**
+  - Bir takım çalıştırması kalıcı kuyrukta dilim dilim ilerler ve her dilim veritabanındaki durumdan devam eder. Ölü bir dilimin bıraktığı görev `uncertain` olur; kendiliğinden asla tekrar çalışmaz, yalnızca kişinin yeniden çalıştırmasıyla (yeni deneme) çalışır.
+  - Delegasyon birimi görevdir (`run_tasks`). Üye yalnızca sözleşmesini ve bağlı olduğu çıktıları görür; bu çıktılar çalıştırmaya özel bir çitle veri olarak sarılır.
+  - Başarısız bir görev kendiliğinden bir kez başka bir üyeye geçer. İkinci başarısızlık çalıştırmayı açık bir hatayla durdurur.
+  - Bütçe ve günlük kota her model çağrısından önce kontrol edilir. Aşımda çalıştırma `waiting_approval`'a geçer; bekleme deneme harcamaz.
+  - Takımdaki turlar gözetimsizdir: `danger` araçlar sunulmaz, güvenli okuma dışındaki her şey kişiye kart olur.
+  - Takım hafızası `scope=team`'dir; üyeler için tavan T4, lider için T2'dir. Kişinin hafızasına yalnızca sahiplenmeyle, kişinin kendi sözü olarak geçer.
+- **Durum:** Kabul (F5, 2026-10-12).
+
