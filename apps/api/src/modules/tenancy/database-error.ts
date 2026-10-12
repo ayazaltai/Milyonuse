@@ -237,6 +237,26 @@ const BY_HINT: Record<string, { code: ErrorCode; message: string }> = {
     code: ErrorCode.CONFLICT,
     message: 'A run’s steps are a record and never change.',
   },
+  automation_limit: {
+    code: ErrorCode.CONFLICT,
+    message: 'You have fifty automations already. Delete one to make room.',
+  },
+  automation_invalid: {
+    code: ErrorCode.VALIDATION_FAILED,
+    message: 'This automation is missing what it needs to run — its schedule, or what it watches.',
+  },
+  automation_chain_loop: {
+    code: ErrorCode.CONFLICT,
+    message: 'That would make automations start each other in a loop.',
+  },
+  automation_chain_too_deep: {
+    code: ErrorCode.CONFLICT,
+    message: 'A chain of automations is at most three deep.',
+  },
+  automation_trigger_immutable: {
+    code: ErrorCode.CONFLICT,
+    message: 'What arrived for an automation is a record and does not change.',
+  },
   memory_scope_unknown: {
     code: ErrorCode.VALIDATION_FAILED,
     message: 'That memory names no agent of yours.',
