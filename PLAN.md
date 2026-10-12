@@ -80,7 +80,7 @@ Her faz **kendi başına yayınlanabilir** bir artış üretir. Her fazın şart
 | **F3** ✅ | Araçlar, Güvenlik, Eylemler | RiskEngine ile Proposal'ın birleşimi; web, araştırma, tarayıcı, sandbox, dosya araçları; MCP client; Bağlantılar | [F3](docs/phases/F3-tools-security.md) |
 | **F4** ✅ | Agent Stüdyosu ve Skills | Özel agent oluşturma (persona, model, araçlar, hafıza kapsamı); şablonlar; Skills (prosedürel hafıza); kendini geliştirme (replay kapılı) | [F4](docs/phases/F4-agent-studio-skills.md) |
 | **F5** ✅ | Agent Takımları | Lider ve üyeler; görev grafı; devretme ve delegasyon; takım hafızası; paralel çalışma; run ağacı; bütçeler | [F5](docs/phases/F5-agent-teams.md) |
-| **F6** | Otomasyonlar | Proaktif (zamanlama, izleme, hedef, öneri) ve reaktif (webhook, e-posta, kanal, dosya, agent olayı, elle); Run'lar panosu; Onay Kutusu | [F6](docs/phases/F6-automations.md) |
+| **F6** ✅ | Otomasyonlar | Proaktif (zamanlama, izleme, hedef, öneri) ve reaktif (webhook, e-posta, kanal, dosya, agent olayı, elle); Run'lar panosu; Onay Kutusu | [F6](docs/phases/F6-automations.md) |
 | **F7** | Kanallar | WhatsApp, Telegram, Slack, E-posta (+ Discord); eşleştirme; kanaldan onay | [F7](docs/phases/F7-channels.md) |
 | **F8** | Abonelik ve Ödeme | Planlar, kotalar, kullanım ölçümü; Stripe + iyzico; onboarding | [F8](docs/phases/F8-billing.md) |
 | **F9** | Güven, Uyum, Platform | MCP sunucusu (Milyonuse'u Claude/ChatGPT'ye açmak); dışa aktarma; KVKK/GDPR silme (tombstone); audit; gözlemlenebilirlik; ayarlar | [F9](docs/phases/F9-trust-platform.md) |

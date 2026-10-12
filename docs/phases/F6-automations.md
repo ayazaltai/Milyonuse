@@ -2,7 +2,7 @@
 
 **Amaç:** Agent'lar ve takımlar kullanıcı başında olmadan çalışır. Kimi kendi kendine (proaktif), kimi bir olay gelince ya da elle çağrılınca (reaktif / deaktif). Onay gereken her şey Onay Kutusuna ve kanallara düşer.
 
-**Bağımlılık:** F5 · **Kaynak:** App-Milyonus `agent.schedules.ts` (DST-güvenli), `agent.notifications.ts`; Agent 5.5 `cron/schedule.py`, `proactive/*`
+**Bağımlılık:** F5 · **Kaynak:** App-Milyonus `agent.schedules.ts` (DST-güvenli), `agent.notifications.ts`; Agent 5.5 `cron/schedule.py`, `proactive/*` · **Durum:** ✅ tamamlandı — [teslim raporu](../delivered/F6-delivered.md) (şartnameden sapmalar §6'da)
 
 ---
 

@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  Activity,
   BookOpenCheck,
   Bot,
   BrainCircuit,
   House,
+  Inbox,
   Link2,
   LogOut,
   Menu,
@@ -17,7 +19,7 @@ import {
   Workflow,
   X,
 } from 'lucide-react';
-import type { Locale, Me } from '@milyonuse/contracts';
+import type { InboxCount, Locale, Me } from '@milyonuse/contracts';
 import { Lockup } from '@/components/brand/lockup';
 import { getDictionary } from '@/i18n';
 import { request } from '@/lib/client-api';
@@ -30,7 +32,13 @@ interface Item {
   Icon: Icon;
   /** Not built yet: shown so the shape of the product is visible, marked "soon", not a link. */
   soon?: boolean;
+  /** A count beside it, read out with the label. */
+  count?: number;
+  countLabel?: string;
 }
+
+/** How often the bell asks what waits: a minute, and whenever the page changes. */
+const INBOX_POLL_MS = 60_000;
 
 /**
  * The signed-in shell's navigation. The sections arrive phase by phase
@@ -43,12 +51,28 @@ export function Sidebar({ me, locale }: { me: Me; locale: Locale }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [waiting, setWaiting] = useState(0);
+
+  useEffect(() => {
+    let live = true;
+    const read = () =>
+      void request<InboxCount>('/inbox/count').then((result) => {
+        if (live && result.ok) setWaiting(result.data.unread);
+      });
+    read();
+    const timer = setInterval(read, INBOX_POLL_MS);
+    return () => {
+      live = false;
+      clearInterval(timer);
+    };
+  }, [pathname]);
 
   const groups: { label?: string; items: Item[] }[] = [
     {
       items: [
         { href: '/app', label: n.home, Icon: House },
         { href: '/app/agent', label: n.agent, Icon: Sparkles },
+        { href: '/app/inbox', label: n.inbox, Icon: Inbox, count: waiting, countLabel: t.app.inbox.bell(waiting) },
       ],
     },
     {
@@ -63,7 +87,8 @@ export function Sidebar({ me, locale }: { me: Me; locale: Locale }) {
     {
       label: n.groupRun,
       items: [
-        { href: '/app/automations', label: n.automations, Icon: Workflow, soon: true },
+        { href: '/app/automations', label: n.automations, Icon: Workflow },
+        { href: '/app/runs', label: n.runs, Icon: Activity },
         { href: '/app/connections', label: n.connections, Icon: Link2 },
       ],
     },
@@ -116,9 +141,15 @@ export function Sidebar({ me, locale }: { me: Me; locale: Locale }) {
                       onClick={() => setOpen(false)}
                       aria-current={isActive(item.href) ? 'page' : undefined}
                       className={`nav-item${isActive(item.href) ? ' nav-item-active' : ''}`}
+                      aria-label={item.countLabel}
                     >
                       <item.Icon size={16} strokeWidth={1.8} />
-                      <span>{item.label}</span>
+                      <span style={{ flex: 1 }}>{item.label}</span>
+                      {item.count ? (
+                        <span className="nav-count" aria-hidden>
+                          {item.count > 99 ? '99+' : item.count}
+                        </span>
+                      ) : null}
                     </Link>
                   ),
                 )}

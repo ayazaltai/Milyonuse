@@ -172,3 +172,15 @@ Biçim: **Karar · Gerekçe · Sonuç · Durum**
   - Takım hafızası `scope=team`'dir; üyeler için tavan T4, lider için T2'dir. Kişinin hafızasına yalnızca sahiplenmeyle, kişinin kendi sözü olarak geçer.
 - **Durum:** Kabul (F5, 2026-10-12).
 
+### D-22 — Otomasyonların uygulama kararları (F6)
+- **Karar:**
+  - Bir otomasyon her zaman F5'in motoruyla çalışır. Hedef bir agent ise tek görevli, takımsız bir çalıştırma açılır. Ayrı bir otomasyon motoru yoktur.
+  - Her olay önce bir tetik olarak tekillik anahtarıyla bir kez yazılır, sonra kuyrukta ateşlenir. "Bir olay, bir çalıştırma" kuralını veritabanının benzersizlik kısıtı tutar.
+  - Zamanlama SQL'dedir (`app.automation_next`). Dakikalık geçiş vadesi geleni `SKIP LOCKED` ile sahiplenip sonraki zamanı aynı ifadede ileri alır. Kaçırılan çalışmalar birikmez, bir kez çalışır.
+  - Zincir derinliği (≤3), döngü yasağı ve üst üste üç hatada duraklama SQL'dedir.
+  - Otomasyon çalıştırmalarına `danger` araçlar sunulur, böylece istenen dış eylem Onay Kutusunda bir öneri olur. RiskEngine `danger`'ı ve geri alınamazı asla kendi başına çalıştırmaz. `trusted` yalnızca kişinin açık onayıyla kaydedilir.
+  - Webhook, e-posta ve monitor girdisi her zaman dış kaynaktır: çitle veri olarak verilir, çalıştırma `third_party` taint'iyle başlar.
+  - Webhook imza anahtarı adresinden sunucu anahtarıyla türetilir ve saklanmaz. Yalnızca oluşturulurken ve yenilenirken bir kez gösterilir.
+  - Gelen e-posta, sağlayıcının kendi bearer'ıyla tek bir uç noktaya iletilir; otomasyon alıcı adresinden bulunur.
+  - Monitor değişikliği hash ile algılar. Değişiklik yoksa model çağrılmaz.
+- **Durum:** Kabul (F6, 2026-10-12).
